@@ -110,7 +110,6 @@ type OrganizationDetails = {
 
 // quinn organizations current
 async function organizationsCurrent(): Promise<OrganizationDetails>;
-
 ```
 
 ### Members (`quinn members`)
@@ -294,7 +293,7 @@ const quinn = new Quinn();
 Quick command-line check (`node -e`):
 
 ```bash
-pnpm --filter @totoday/quinn-cli exec node -e "const { Quinn } = require('@totoday/quinn-sdk'); const q = new Quinn(); q.organizations.current().then(console.log)"
+node -e "const { Quinn } = require('@totoday/quinn-sdk'); const q = new Quinn(); q.organizations.current().then(console.log)"
 ```
 
 ### organizations (`quinn.organizations`)
