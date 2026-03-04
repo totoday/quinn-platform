@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { Command } from 'commander';
-import { Quinn, Privilege } from '@totoday/quinn-sdk';
+import { DEFAULT_QUINN_API_URL, Quinn, QuinnAuth, Privilege } from '@totoday/quinn-sdk';
 
 type QuinnCliConfig = {
   apiUrl?: string;
@@ -83,7 +83,7 @@ function writeConfig(configPath: string, config: QuinnCliConfig): void {
 
 function resolveRuntimeConfig(opts: GlobalOptions, fileConfig: QuinnCliConfig): QuinnCliConfig {
   return {
-    apiUrl: opts.apiUrl || process.env.QUINN_API_URL || fileConfig.apiUrl,
+    apiUrl: opts.apiUrl || process.env.QUINN_API_URL || fileConfig.apiUrl || DEFAULT_QUINN_API_URL,
     token: opts.apiToken || opts.token || process.env.QUINN_API_TOKEN || fileConfig.token,
     orgId: opts.orgId || process.env.QUINN_ORG_ID || fileConfig.orgId,
   };
@@ -91,9 +91,6 @@ function resolveRuntimeConfig(opts: GlobalOptions, fileConfig: QuinnCliConfig): 
 
 function createClient(config: QuinnCliConfig): Quinn {
   const { apiUrl, token, orgId } = config;
-  if (!apiUrl) {
-    throw new Error('missing apiUrl: set --api-url or QUINN_API_URL or config');
-  }
   if (!token) {
     throw new Error('missing token: set --api-token/--token or QUINN_API_TOKEN or config');
   }
@@ -101,6 +98,69 @@ function createClient(config: QuinnCliConfig): Quinn {
     throw new Error('missing orgId: set --org-id or QUINN_ORG_ID or config');
   }
   return new Quinn({ apiUrl, token, orgId });
+}
+
+function readPasswordFromStdin(): string {
+  const value = fs.readFileSync(0, 'utf8').trim();
+  if (!value) {
+    throw new Error('empty password from stdin');
+  }
+  return value;
+}
+
+async function promptPasswordHidden(prompt = 'Password: '): Promise<string> {
+  if (!process.stdin.isTTY) {
+    throw new Error('interactive password prompt requires TTY, use --password-stdin');
+  }
+  return await new Promise<string>((resolve, reject) => {
+    const stdin = process.stdin;
+    const stdout = process.stdout;
+    let password = '';
+
+    const cleanup = () => {
+      stdin.off('data', onData);
+      if (stdin.isTTY) {
+        stdin.setRawMode(false);
+      }
+      stdin.pause();
+    };
+
+    const onData = (chunk: Buffer) => {
+      const text = chunk.toString('utf8');
+
+      if (text === '\u0003') {
+        cleanup();
+        reject(new Error('login cancelled'));
+        return;
+      }
+
+      if (text === '\r' || text === '\n') {
+        cleanup();
+        stdout.write('\n');
+        const value = password.trim();
+        if (!value) {
+          reject(new Error('password is required'));
+          return;
+        }
+        resolve(value);
+        return;
+      }
+
+      if (text === '\u007f' || text === '\b' || text === '\x08') {
+        if (password.length > 0) {
+          password = password.slice(0, -1);
+        }
+        return;
+      }
+
+      password += text;
+    };
+
+    stdout.write(prompt);
+    stdin.resume();
+    stdin.setRawMode(true);
+    stdin.on('data', onData);
+  });
 }
 
 function getContext(command: Command): {
@@ -165,6 +225,8 @@ program
     [
       '',
       'Examples:',
+      '  quinn login --email <email>',
+      '  echo "<password>" | quinn login --email <email> --password-stdin',
       '  quinn config set --api-url http://localhost:8090 --api-token <token> --org-id <orgId>',
       '  quinn organizations details',
       '  quinn members find alice',
@@ -242,6 +304,60 @@ configCmd.addHelpText(
     '  quinn config set --api-url http://localhost:8090 --api-token <token> --org-id <orgId>',
   ].join('\n')
 );
+
+program
+  .command('login')
+  .description('login and save token (+orgId) into config (password input is hidden by default)')
+  .requiredOption('--email <email>')
+  .option('--password <password>', 'DEPRECATED: avoid plain-text password in command history/process list')
+  .option('--password-stdin', 'read password from stdin')
+  .option('--org-id <id>', 'override org id if login response does not include one')
+  .action(function (opts: { email: string; password?: string; passwordStdin?: boolean; orgId?: string }) {
+    return withHandler(async () => {
+      const { configPath, fileConfig, runtimeConfig } = getContext(this);
+      if (opts.password && opts.passwordStdin) {
+        throw new Error('cannot use --password and --password-stdin together');
+      }
+      let password = '';
+      if (opts.passwordStdin) {
+        password = readPasswordFromStdin();
+      } else if (opts.password) {
+        process.stderr.write(
+          'Warning: --password is deprecated and insecure. Use interactive prompt or --password-stdin.\n'
+        );
+        password = opts.password;
+      } else {
+        password = await promptPasswordHidden();
+      }
+      const auth = new QuinnAuth({
+        apiUrl: runtimeConfig.apiUrl,
+        configPath,
+      });
+      const login = await auth.login({
+        email: opts.email,
+        password,
+      });
+      const resolvedOrgId = opts.orgId || login.orgId || fileConfig.orgId;
+      if (!resolvedOrgId) {
+        throw new Error('orgId not found in login response, please pass --org-id');
+      }
+      const next: QuinnCliConfig = {
+        apiUrl: runtimeConfig.apiUrl || DEFAULT_QUINN_API_URL,
+        token: login.token,
+        orgId: resolvedOrgId,
+      };
+      writeConfig(configPath, next);
+      print({
+        ok: true,
+        configPath,
+        config: {
+          apiUrl: next.apiUrl,
+          token: maskToken(next.token),
+          orgId: next.orgId,
+        },
+      });
+    });
+  });
 
 const orgCmd = program
   .command('organizations')

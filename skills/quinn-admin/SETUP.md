@@ -17,6 +17,18 @@ No install (one-off):
 npx @totoday/quinn-cli --help
 ```
 
+Login and save local config (recommended: hidden password prompt):
+
+```bash
+npx quinn login --email <email>
+```
+
+Or use stdin (for scripts/password managers):
+
+```bash
+echo "<password>" | npx quinn login --email <email> --password-stdin
+```
+
 ## SDK
 
 Install in your project:

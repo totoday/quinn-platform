@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+export const DEFAULT_QUINN_API_URL = 'https://api.lunapark.com';
+
 export interface QuinnClientConfig {
   apiUrl?: string;
   token?: string;
@@ -25,17 +27,20 @@ interface QuinnFileConfig {
 }
 
 export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfig {
-  const configPath =
-    firstNonEmpty(input.configPath, process.env.QUINN_CONFIG_PATH) ??
-    path.join(os.homedir(), '.config', 'quinn', 'config.json');
+  const configPath = resolveConfigPath(input.configPath);
   const fileConfig = readConfigFile(configPath);
 
-  const apiUrl = firstNonEmpty(input.apiUrl, process.env.QUINN_API_URL, fileConfig.apiUrl);
+  const apiUrl = firstNonEmpty(
+    input.apiUrl,
+    process.env.QUINN_API_URL,
+    fileConfig.apiUrl,
+    DEFAULT_QUINN_API_URL
+  );
   const token = firstNonEmpty(input.token, process.env.QUINN_API_TOKEN, fileConfig.token);
   const orgId = firstNonEmpty(input.orgId, process.env.QUINN_ORG_ID, fileConfig.orgId);
 
   if (!apiUrl) {
-    throw new Error('missing apiUrl: provide QuinnClientConfig.apiUrl, QUINN_API_URL, or config file apiUrl');
+    throw new Error('missing apiUrl');
   }
   if (!token) {
     throw new Error('missing token: provide QuinnClientConfig.token, QUINN_API_TOKEN, or config file token');
@@ -50,6 +55,24 @@ export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfi
     orgId,
     httpClient: input.httpClient,
   };
+}
+
+export function resolveApiUrl(input?: { apiUrl?: string; configPath?: string }): string {
+  const configPath = resolveConfigPath(input?.configPath);
+  const fileConfig = readConfigFile(configPath);
+  return firstNonEmpty(
+    input?.apiUrl,
+    process.env.QUINN_API_URL,
+    fileConfig.apiUrl,
+    DEFAULT_QUINN_API_URL
+  ) as string;
+}
+
+export function resolveConfigPath(configPath?: string): string {
+  return (
+    firstNonEmpty(configPath, process.env.QUINN_CONFIG_PATH) ??
+    path.join(os.homedir(), '.config', 'quinn', 'config.json')
+  );
 }
 
 function readConfigFile(configPath: string): QuinnFileConfig {

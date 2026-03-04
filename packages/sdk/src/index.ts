@@ -1,4 +1,5 @@
 import { AxiosInstance } from 'axios';
+import { QuinnAuth } from './auth';
 import {
   QuinnClientConfig,
   QuinnResolvedConfig,
@@ -13,6 +14,12 @@ import { OrganizationsService } from './services/organizations';
 import { RolesService } from './services/roles';
 
 export * from './types';
+export { QuinnAuth } from './auth';
+export {
+  DEFAULT_QUINN_API_URL,
+  resolveApiUrl,
+  resolveConfigPath,
+} from './config';
 export type { QuinnClientConfig } from './config';
 
 export class Quinn {
