@@ -5,7 +5,13 @@
   "packageManager": "pnpm@10.0.0",
   "scripts": {
     "quinn": "node packages/cli/dist/index.js",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm -r build && changeset publish",
     "build": "pnpm -r build",
     "clean": "pnpm -r clean"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.30.0"
   }
 }

@@ -1,16 +1,25 @@
-name: Publish Packages
+name: Release
 
 on:
-  workflow_dispatch:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths:
+      - '.changeset/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'tsconfig.base.json'
+      - '.github/workflows/publish.yml'
+  workflow_dispatch:
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      pull-requests: write
       id-token: write
     steps:
       - name: Checkout
@@ -34,12 +43,11 @@ jobs:
       - name: Build
         run: pnpm -r build
 
-      - name: Publish SDK
-        run: pnpm --filter @totoday/quinn-sdk publish --access public --no-git-checks
+      - name: Create Release PR or Publish
+        uses: changesets/action@v1
+        with:
+          version: pnpm version-packages
+          publish: pnpm release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish CLI
-        run: pnpm --filter @totoday/quinn-cli publish --access public --no-git-checks
-        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
