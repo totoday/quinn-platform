@@ -1,35 +1,57 @@
 ---
 name: quinn-admin
-description: Quinn agent CLI playbook for business questions. Use this skill whenever the user asks about organization structure, members/managers, role-level-competency mapping, progress status, endorsement gaps, or "who is blocked / what is pending". Use it even if the user does not mention CLI explicitly. Respond in user-readable language with evidence.
+description: Quinn business analysis playbook using Quinn CLI/SDK. Use this skill whenever the user asks about organization structure, manager/member coverage, role-level-competency expectations, endorsement progress, pending gaps, blockers, or who needs action next. Use it even when the user does not explicitly mention CLI or SDK.
 ---
 
 # Quinn Admin Skill
 
-Use this skill to answer Quinn business questions through the Quinn CLI.
+Version: 0.4.0  
+Updated: 2026-03-04  
+Compatibility: `@totoday/quinn-cli >= 0.1.1`, `@totoday/quinn-sdk >= 0.1.1`
+
+Use this skill to answer Quinn business questions in user-readable language with verifiable evidence.
 
 ## Mission
 
-This skill should consistently produce three business outcomes:
+Produce three outcomes:
 
 - make current capability progress understandable
-- identify pending endorsement gaps and possible blockers
-- provide evidence-backed answers that users can trust
+- identify endorsement gaps and likely blockers
+- provide evidence-backed answers users can trust
 
-## Business narrative
+## When To Use
+
+Use this skill if the user asks about:
+
+- org structure and high-level status
+- members/managers and reporting coverage
+- role/level/competency requirements
+- endorsement progress or pending items
+- who is blocked, who needs action next
+
+## When Not To Use
+
+Do not use this skill for:
+
+- direct data mutations or admin write operations
+- non-Quinn domains with unrelated data models
+
+## Default Workflow (Required)
+
+1. Clarify the business question and scope (which org, which role/level/member set).
+2. Fetch the minimum data needed through CLI (or SDK if query logic is multi-step).
+3. Interpret with Quinn domain semantics (especially endorsement rules).
+4. Respond in business language first, then attach concise evidence.
+5. Explicitly separate facts vs assumptions vs unknowns.
+
+## Optional Workflow (Use When Needed)
+
+- use SDK for multi-step joins or repeated lookups that are too cumbersome via CLI alone
+- run small follow-up queries to resolve ambiguity before concluding
+
+## Quinn Domain Semantics
 
 Quinn is a capability growth system for organizations.
-
-Manager/Admin questions:
-
-- Are people progressing on required competencies?
-- Which competencies are pending endorsement?
-- Which teams or roles are blocked?
-
-Member questions:
-
-- What competencies are expected for my role and level?
-- Which are self-assessed?
-- Which are endorsed vs pending?
 
 Core model:
 
@@ -40,32 +62,44 @@ Core model:
 - `competency`: capability required by level
 - `endorsement`: member x competency status
 
-Endorsement record lifecycle:
+Endorsement lifecycle:
 
-- endorsement records are created only when a real endorsement event happens:
+- endorsement records are created only when a real event happens:
   - member self-assessment, or
   - manager endorsement
 - do not assume every member x competency pair already has a record
 
-Important endorsement rule:
+Important rule:
 
-- if `competency.settings.managerOnlyEndorsement === true`, treat this competency as manager-endorsement-driven.
-- in this mode, do not require or expect self-assessment before manager endorsement.
+- if `competency.settings.managerOnlyEndorsement === true`, this competency is manager-endorsement-driven
+- in this mode, do not require or expect self-assessment before manager endorsement
 
-## Answer contract
+Interpretation note:
 
-Principles:
+- a missing endorsement record usually means no self-assessment/manager-endorsement event yet
+- do not treat missing records as automatic system/data errors
 
-- Purpose-first: answer the underlying business question, not just the literal query.
-- Semantic clarity: describe entities and relationships in human meaning before system representation.
-- Evidence alignment: conclusions must be grounded in retrieved data and explicit scope.
-- Epistemic honesty: distinguish facts, assumptions, and unknowns clearly.
-- Minimal leakage: avoid exposing unnecessary internal identifiers unless required.
-- Correct interpretation: apply domain semantics consistently (especially endorsement rules).
+## Answer Principles (Required)
 
-## CLI Reference
+- Purpose-first: answer the business question, not only the literal query.
+- Semantic clarity: explain meaning before IDs.
+- Evidence alignment: every conclusion must tie to retrieved data and scope.
+- Epistemic honesty: clearly mark assumptions and unknowns.
+- Minimal leakage: avoid exposing internal IDs unless needed.
+- Correct domain interpretation: apply endorsement semantics consistently.
 
-Setup and installation are documented in `SETUP.md`.
+## Output Shape (Default)
+
+Use this response shape unless user asks otherwise:
+
+1. `Conclusion` (plain language)
+2. `Why` (2-5 bullets with business interpretation)
+3. `Evidence` (specific queried facts)
+4. `Unknowns / Next checks` (only if needed)
+
+## CLI Manual
+
+Setup and installation are in `SETUP.md`.
 
 Command entrypoint:
 
@@ -75,7 +109,7 @@ npx quinn <resource> <action> ...
 npx @totoday/quinn-cli <resource> <action> ...
 ```
 
-Shared aliases used below:
+Shared aliases:
 
 ```ts
 type Privilege = "owner" | "admin" | "member";
@@ -280,13 +314,11 @@ Interpretation note:
 - a missing endorsement record usually means no self-assessment/manager-endorsement event yet
 - do not treat missing records as automatic system/data errors
 
-## SDK Reference (Optional)
+## SDK Manual (Optional)
 
-Method style:
+Use SDK when query logic requires multiple dependent calls or data composition.
 
-- use service methods directly, for example: `await quinn.roles.list()`
-
-Client initialization:
+Initialization:
 
 ```ts
 import { Quinn } from "@totoday/quinn-sdk";
@@ -368,7 +400,7 @@ quinn.endorsements.find(uid: string, competencyId: string): Promise<Endorsement 
 quinn.endorsements.list(input: { uids: string[]; competencyIds: string[] }): Promise<Endorsement[]>;
 ```
 
-## Guardrails
+## Guardrails (Required)
 
 - never fabricate values
 - never expose token values

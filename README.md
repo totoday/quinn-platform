@@ -1,40 +1,52 @@
 # quinn-platform
 
-Agent-friendly Quinn Harness monorepo.
+Quinn CLI + SDK monorepo for agent-friendly organization/role/competency queries.
 
 ## Packages
 
-- `@totoday/quinn-sdk` - TypeScript SDK for Quinn Platform API
-- `@totoday/quinn-cli` - CLI wrapper for common agent workflows
+- `@totoday/quinn-cli`  
+  CLI for login, organization lookup, members, roles, levels, competencies, and endorsements.
+  - Package README: [`packages/cli/README.md`](./packages/cli/README.md)
+- `@totoday/quinn-sdk`  
+  TypeScript SDK for the same Quinn platform endpoints.
+  - Package README: [`packages/sdk/README.md`](./packages/sdk/README.md)
 
-## Layout
+## Repo Layout
 
 - `packages/sdk`
 - `packages/cli`
 - `skills/quinn-admin`
 
-## Development
+## Local Development
 
 ```bash
 pnpm install
 pnpm -r build
 ```
 
+Run CLI locally:
+
+```bash
+pnpm quinn --help
+```
+
 ## CI & Release
 
-- `CI` workflow runs on PRs and pushes to `main` and validates build.
-- `Release` workflow runs on pushes to `main`:
-  - If there are pending changesets, it opens/updates a Release PR with version bumps.
-  - After the Release PR is merged, it publishes changed packages to npm.
+1. Add a changeset for package changes:
+
+```bash
+pnpm changeset
+```
+
+2. Merge to `main`.
+3. `Release` workflow opens/updates a release PR with version bumps.
+4. Merge the release PR to publish to npm.
+
+Workflows:
+
+- `CI`: build validation on PR/push.
+- `Release`: changesets-based versioning and publish.
 
 Required GitHub repository secret:
 
 - `NPM_TOKEN` (npm automation token with publish access to `@totoday` scope)
-
-Useful commands:
-
-```bash
-pnpm changeset          # create a changeset file for package changes
-pnpm version-packages   # apply versions from changesets
-pnpm release            # publish packages (used by CI)
-```
