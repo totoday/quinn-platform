@@ -253,7 +253,7 @@ orgCmd
     return withHandler(async () => {
       const { runtimeConfig } = getContext(this);
       const quinn = createClient(runtimeConfig);
-      print(await quinn.organizations.get());
+      print(await quinn.organizations.current());
     });
   });
 

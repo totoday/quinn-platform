@@ -65,15 +65,15 @@ Principles:
 
 ## CLI Reference
 
+Setup and installation are documented in `SETUP.md`.
+
 Command entrypoint:
 
 ```bash
-pnpm --filter @totoday/quinn-cli exec quinn <resource> <action> ...
+npx quinn <resource> <action> ...
+# or one-off
+npx @totoday/quinn-cli <resource> <action> ...
 ```
-
-Execution mode:
-
-- CLI-only in this phase (SDK chapter deferred)
 
 Shared aliases used below:
 
@@ -279,6 +279,94 @@ Interpretation note:
 
 - a missing endorsement record usually means no self-assessment/manager-endorsement event yet
 - do not treat missing records as automatic system/data errors
+
+## SDK Reference (Optional)
+
+Method style:
+
+- use service methods directly, for example: `await quinn.roles.list()`
+
+Client initialization:
+
+```ts
+import { Quinn } from "@totoday/quinn-sdk";
+
+const quinn = new Quinn();
+```
+
+Quick command-line check (`node -e`):
+
+```bash
+pnpm --filter @totoday/quinn-cli exec node -e "const { Quinn } = require('@totoday/quinn-sdk'); const q = new Quinn(); q.organizations.current().then(console.log)"
+```
+
+### organizations (`quinn.organizations`)
+
+```ts
+quinn.organizations.current(): Promise<Organization | null>;
+quinn.organizations.getDetails(): Promise<OrganizationDetails>;
+```
+
+### members (`quinn.members`)
+
+```ts
+quinn.members.list(params?: {
+  search?: string;
+  privilege?: Privilege | Privilege[];
+  managerUid?: string;
+  limit?: number;
+  token?: string;
+}): Promise<Paged<Member>>;
+
+quinn.members.listManagers(params?: {
+  search?: string;
+  limit?: number;
+  token?: string;
+}): Promise<Paged<Member>>;
+
+quinn.members.get(id: string): Promise<Member | null>;
+quinn.members.batchGet(input: string[] | { ids?: string[]; emails?: string[] }): Promise<Member[]>;
+```
+
+### roles (`quinn.roles`)
+
+```ts
+quinn.roles.list(): Promise<Role[]>;
+quinn.roles.get(id: string): Promise<Role | null>;
+quinn.roles.batchGet(ids: string[]): Promise<Role[]>;
+```
+
+### levels (`quinn.levels`)
+
+```ts
+quinn.levels.list(params: { roleId: string; limit?: number; token?: string }): Promise<Paged<Level>>;
+quinn.levels.get(id: string): Promise<Level | null>;
+quinn.levels.batchGet(ids: string[]): Promise<Level[]>;
+```
+
+### competencies (`quinn.competencies`)
+
+```ts
+quinn.competencies.list(params: {
+  roleId: string;
+  levelId: string;
+  search?: string;
+  limit?: number;
+  token?: string;
+}): Promise<Paged<Competency>>;
+
+quinn.competencies.get(id: string): Promise<Competency | null>;
+quinn.competencies.batchGet(ids: string[]): Promise<Competency[]>;
+quinn.competencies.listCourses(id: string): Promise<Course[]>;
+```
+
+### endorsements (`quinn.endorsements`)
+
+```ts
+quinn.endorsements.get(id: string): Promise<Endorsement | null>;
+quinn.endorsements.find(uid: string, competencyId: string): Promise<Endorsement | null>;
+quinn.endorsements.list(input: { uids: string[]; competencyIds: string[] }): Promise<Endorsement[]>;
+```
 
 ## Guardrails
 

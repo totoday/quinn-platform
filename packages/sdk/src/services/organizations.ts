@@ -7,7 +7,7 @@ export class OrganizationsService {
     private readonly orgPath: () => string
   ) {}
 
-  async get(): Promise<Organization | null> {
+  async current(): Promise<Organization | null> {
     const resp = await this.http.get<{ item: Organization | null }>(this.orgPath());
     return resp.data.item;
   }

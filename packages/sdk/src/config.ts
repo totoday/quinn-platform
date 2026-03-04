@@ -1,0 +1,90 @@
+import { AxiosInstance } from 'axios';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+export interface QuinnClientConfig {
+  apiUrl?: string;
+  token?: string;
+  orgId?: string;
+  configPath?: string;
+  httpClient?: AxiosInstance;
+}
+
+export interface QuinnResolvedConfig {
+  apiUrl: string;
+  token: string;
+  orgId: string;
+  httpClient?: AxiosInstance;
+}
+
+interface QuinnFileConfig {
+  apiUrl?: string;
+  token?: string;
+  orgId?: string;
+}
+
+export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfig {
+  const configPath =
+    firstNonEmpty(input.configPath, process.env.QUINN_CONFIG_PATH) ??
+    path.join(os.homedir(), '.config', 'quinn', 'config.json');
+  const fileConfig = readConfigFile(configPath);
+
+  const apiUrl = firstNonEmpty(input.apiUrl, process.env.QUINN_API_URL, fileConfig.apiUrl);
+  const token = firstNonEmpty(input.token, process.env.QUINN_API_TOKEN, fileConfig.token);
+  const orgId = firstNonEmpty(input.orgId, process.env.QUINN_ORG_ID, fileConfig.orgId);
+
+  if (!apiUrl) {
+    throw new Error('missing apiUrl: provide QuinnClientConfig.apiUrl, QUINN_API_URL, or config file apiUrl');
+  }
+  if (!token) {
+    throw new Error('missing token: provide QuinnClientConfig.token, QUINN_API_TOKEN, or config file token');
+  }
+  if (!orgId) {
+    throw new Error('missing orgId: provide QuinnClientConfig.orgId, QUINN_ORG_ID, or config file orgId');
+  }
+
+  return {
+    apiUrl,
+    token,
+    orgId,
+    httpClient: input.httpClient,
+  };
+}
+
+function readConfigFile(configPath: string): QuinnFileConfig {
+  if (!configPath || !fs.existsSync(configPath)) {
+    return {};
+  }
+  try {
+    const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8')) as QuinnFileConfig;
+    if (!parsed || typeof parsed !== 'object') {
+      return {};
+    }
+    return {
+      apiUrl: asNonEmptyString(parsed.apiUrl),
+      token: asNonEmptyString(parsed.token),
+      orgId: asNonEmptyString(parsed.orgId),
+    };
+  } catch {
+    return {};
+  }
+}
+
+function firstNonEmpty(...values: Array<string | undefined>): string | undefined {
+  for (const value of values) {
+    const normalized = asNonEmptyString(value);
+    if (normalized) {
+      return normalized;
+    }
+  }
+  return undefined;
+}
+
+function asNonEmptyString(value: string | undefined): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : trimmed;
+}
