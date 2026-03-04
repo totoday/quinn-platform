@@ -1,5 +1,15 @@
 # @totoday/quinn-cli
 
+## 0.1.2
+
+### Patch Changes
+
+- 629fba0: Unify organization query semantics around `organizations current`:
+  - remove `organizations details` command from CLI
+  - make `organizations current` return organization details with aggregate stats
+  - align SDK and skill documentation with the simplified flow
+  - @totoday/quinn-sdk@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
