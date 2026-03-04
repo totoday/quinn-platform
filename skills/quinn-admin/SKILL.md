@@ -36,18 +36,10 @@ Do not use this skill for:
 - direct data mutations or admin write operations
 - non-Quinn domains with unrelated data models
 
-## Default Workflow (Required)
+## Tool Selection
 
-1. Clarify the business question and scope (which org, which role/level/member set).
-2. Fetch the minimum data needed through CLI (or SDK if query logic is multi-step).
-3. Interpret with Quinn domain semantics (especially endorsement rules).
-4. Respond in business language first, then attach concise evidence.
-5. Explicitly separate facts vs assumptions vs unknowns.
-
-## Optional Workflow (Use When Needed)
-
-- use SDK for multi-step joins or repeated lookups that are too cumbersome via CLI alone
-- run small follow-up queries to resolve ambiguity before concluding
+- Use CLI for single-resource queries (list members, get role, etc.)
+- Use SDK when you need multi-step joins, repeated lookups, or complex data composition
 
 ## Quinn Domain Semantics
 
@@ -62,40 +54,20 @@ Core model:
 - `competency`: capability required by level
 - `endorsement`: member x competency status
 
-Endorsement lifecycle:
+Endorsement rules:
 
-- endorsement records are created only when a real event happens:
-  - member self-assessment, or
-  - manager endorsement
-- do not assume every member x competency pair already has a record
+- endorsement records are created only when a real event happens (self-assessment or manager endorsement)
+- missing endorsement record = no action taken yet (not a data error)
+- two endorsement modes:
+  - default: member self-assesses first, then manager endorses
+  - `managerOnlyEndorsement: true`: member does not self-assess; manager endorses directly
 
-Important rule:
+## Interpretation Guidelines
 
-- if `competency.settings.managerOnlyEndorsement === true`, this competency is manager-endorsement-driven
-- in this mode, do not require or expect self-assessment before manager endorsement
-
-Interpretation note:
-
-- a missing endorsement record usually means no self-assessment/manager-endorsement event yet
-- do not treat missing records as automatic system/data errors
-
-## Answer Principles (Required)
-
-- Purpose-first: answer the business question, not only the literal query.
-- Semantic clarity: explain meaning before IDs.
-- Evidence alignment: every conclusion must tie to retrieved data and scope.
-- Epistemic honesty: clearly mark assumptions and unknowns.
-- Minimal leakage: avoid exposing internal IDs unless needed.
-- Correct domain interpretation: apply endorsement semantics consistently.
-
-## Output Shape (Default)
-
-Use this response shape unless user asks otherwise:
-
-1. `Conclusion` (plain language)
-2. `Why` (2-5 bullets with business interpretation)
-3. `Evidence` (specific queried facts)
-4. `Unknowns / Next checks` (only if needed)
+- Explain business meaning, not just raw data (e.g., "Sarah manages 5 engineers" not "managerUid: user_123 has 5 reports")
+- Apply endorsement semantics correctly (see rules above)
+- Back conclusions with retrieved data
+- Clearly separate facts from assumptions
 
 ## CLI Manual
 
@@ -307,11 +279,6 @@ async function endorsementsList(
 ): Promise<Endorsement[]>;
 ```
 
-Interpretation note:
-
-- a missing endorsement record usually means no self-assessment/manager-endorsement event yet
-- do not treat missing records as automatic system/data errors
-
 ## SDK Manual (Optional)
 
 Use SDK when query logic requires multiple dependent calls or data composition.
@@ -397,8 +364,8 @@ quinn.endorsements.find(uid: string, competencyId: string): Promise<Endorsement 
 quinn.endorsements.list(input: { uids: string[]; competencyIds: string[] }): Promise<Endorsement[]>;
 ```
 
-## Guardrails (Required)
+## Data Integrity
 
-- never fabricate values
-- never expose token values
-- if ambiguous, run the least risky query first and state assumptions
+- Never fabricate values
+- Never expose pagination tokens
+- When ambiguous, query conservatively and state assumptions
