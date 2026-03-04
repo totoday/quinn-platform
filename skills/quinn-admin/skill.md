@@ -40,6 +40,13 @@ Core model:
 - `competency`: capability required by level
 - `endorsement`: member x competency status
 
+Endorsement record lifecycle:
+
+- endorsement records are created only when a real endorsement event happens:
+  - member self-assessment, or
+  - manager endorsement
+- do not assume every member x competency pair already has a record
+
 Important endorsement rule:
 
 - if `competency.settings.managerOnlyEndorsement === true`, treat this competency as manager-endorsement-driven.
@@ -267,6 +274,11 @@ async function endorsementsList(
   competencyIdsCsv: string,
 ): Promise<Endorsement[]>;
 ```
+
+Interpretation note:
+
+- a missing endorsement record usually means no self-assessment/manager-endorsement event yet
+- do not treat missing records as automatic system/data errors
 
 ## Guardrails
 
