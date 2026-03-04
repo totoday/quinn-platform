@@ -33,7 +33,6 @@ Check organization:
 
 ```bash
 quinn organizations current
-quinn organizations details
 ```
 
 ## Common Commands

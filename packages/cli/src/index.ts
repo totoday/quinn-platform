@@ -228,7 +228,7 @@ program
       '  quinn login --email <email>',
       '  echo "<password>" | quinn login --email <email> --password-stdin',
       '  quinn config set --api-url http://localhost:8090 --api-token <token> --org-id <orgId>',
-      '  quinn organizations details',
+      '  quinn organizations current',
       '  quinn members find alice',
       '  quinn members get user-1,user-2,user@example.com',
     ].join('\n')
@@ -364,23 +364,12 @@ const orgCmd = program
   .description('organization metadata and high-level stats');
 orgCmd
   .command('current')
-  .description('get current organization basic info (id, name)')
+  .description('get current organization details with aggregate stats')
   .action(function () {
     return withHandler(async () => {
       const { runtimeConfig } = getContext(this);
       const quinn = createClient(runtimeConfig);
       print(await quinn.organizations.current());
-    });
-  });
-
-orgCmd
-  .command('details')
-  .description('get organization details with aggregate stats')
-  .action(function () {
-    return withHandler(async () => {
-      const { runtimeConfig } = getContext(this);
-      const quinn = createClient(runtimeConfig);
-      print(await quinn.organizations.getDetails());
     });
   });
 orgCmd.addHelpText(
@@ -389,7 +378,6 @@ orgCmd.addHelpText(
     '',
     'Examples:',
     '  quinn organizations current',
-    '  quinn organizations details',
   ].join('\n')
 );
 

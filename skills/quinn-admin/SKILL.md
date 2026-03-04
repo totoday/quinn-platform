@@ -137,10 +137,8 @@ type OrganizationDetails = {
 };
 
 // quinn organizations current
-async function organizationsCurrent(): Promise<Organization | null>;
+async function organizationsCurrent(): Promise<OrganizationDetails>;
 
-// quinn organizations details
-async function organizationsDetails(): Promise<OrganizationDetails>;
 ```
 
 ### Members (`quinn members`)
@@ -335,8 +333,7 @@ pnpm --filter @totoday/quinn-cli exec node -e "const { Quinn } = require('@totod
 ### organizations (`quinn.organizations`)
 
 ```ts
-quinn.organizations.current(): Promise<Organization | null>;
-quinn.organizations.getDetails(): Promise<OrganizationDetails>;
+quinn.organizations.current(): Promise<OrganizationDetails>;
 ```
 
 ### members (`quinn.members`)
