@@ -1,0 +1,20 @@
+{
+  "name": "@totoday/quinn-cli",
+  "version": "0.1.0",
+  "bin": {
+    "quinn": "dist/index.js"
+  },
+  "scripts": {
+    "quinn": "node dist/index.js",
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@totoday/quinn-sdk": "workspace:*",
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}

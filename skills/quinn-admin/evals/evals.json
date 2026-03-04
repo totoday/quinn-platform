@@ -1,0 +1,23 @@
+{
+  "skill_name": "quinn-admin",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Please help me find all admins and owners in this organization, and count them grouped by manager.",
+      "expected_output": "Uses members list with privilege filter, groups by managerUid, returns clear grouped counts and unknown-manager bucket.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Given a roleId, list all competencies under this role and show which level each competency comes from.",
+      "expected_output": "Uses levels list then competencies batch, preserves competency-to-level mapping in output.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Check the endorsement status for 3 users across 2 competencies, and give me a user x competency matrix.",
+      "expected_output": "Uses endorsements list with uids and competencyIds and outputs matrix-style summary without fabrication.",
+      "files": []
+    }
+  ]
+}
