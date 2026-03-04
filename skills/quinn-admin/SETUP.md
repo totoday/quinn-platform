@@ -1,66 +1,40 @@
 # Quinn Admin Setup
 
-This guide explains how to use Quinn CLI and SDK.
+## Create Test Directory
 
-## CLI
-
-Recommended (global install):
+Create and navigate to an empty folder for testing:
 
 ```bash
-npm i -g @totoday/quinn-cli
-npx quinn --help
+mkdir quinn-admin-skills-test
+cd quinn-admin-skills-test
 ```
 
-No install (one-off):
+## Install Dependencies
+
+Install CLI and SDK in your project directory:
 
 ```bash
-npx @totoday/quinn-cli --help
+npm install @totoday/quinn-cli @totoday/quinn-sdk
 ```
 
-Login and save local config (recommended: hidden password prompt):
+## Login
 
 ```bash
-npx quinn login --email <email>
+npx quinn login --email <youremail>
 ```
 
-Or use stdin (for scripts/password managers):
+You'll be prompted to enter your password.
+
+## Install Skill
 
 ```bash
-echo "<password>" | npx quinn login --email <email> --password-stdin
+npx skills add https://github.com/totoday/quinn-platform --skills quinn-admin
 ```
 
-## SDK
+During installation, you'll make three selections:
 
-Install in your project:
+1. **Select agents**: Choose which agents to install to (select as needed)
+2. **Installation scope**: Select `project`
+3. **Installation method**: Select `recommended`
 
-```bash
-npm i @totoday/quinn-sdk
-```
-
-Minimal usage:
-
-```ts
-import { Quinn } from "@totoday/quinn-sdk";
-
-const quinn = new Quinn();
-const org = await quinn.organizations.current();
-console.log(org);
-```
-
-## Config assumptions
-
-`new Quinn()` resolves config in this order:
-
-1. constructor params
-2. environment variables (`QUINN_API_URL`, `QUINN_API_TOKEN`, `QUINN_ORG_ID`)
-3. config file (`~/.config/quinn/config.json` or `QUINN_CONFIG_PATH`)
-
-Example config file:
-
-```json
-{
-  "apiUrl": "http://localhost:8090",
-  "token": "<token>",
-  "orgId": "<orgId>"
-}
-```
+Once complete, you can use the quinn-admin skill in supported AI agents.
