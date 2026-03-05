@@ -2,7 +2,11 @@ import { AxiosInstance } from 'axios';
 import {
   Member,
   MembersBatchGetInput,
+  MembersCreateInput,
   MembersListQuery,
+  MembersUpdateManagerInput,
+  MembersUpdatePrivilegeInput,
+  MembersUpdateRolesInput,
   PagedResult,
 } from '../types';
 
@@ -53,5 +57,37 @@ export class MembersService {
       body
     );
     return resp.data.items;
+  }
+
+  async create(input: MembersCreateInput): Promise<Member | null> {
+    const resp = await this.http.post<{ item: Member | null }>(
+      `${this.orgPath()}/members`,
+      input
+    );
+    return resp.data.item;
+  }
+
+  async updatePrivilege(input: MembersUpdatePrivilegeInput): Promise<Member | null> {
+    const resp = await this.http.patch<{ item: Member | null }>(
+      `${this.orgPath()}/members/${input.memberId}/privilege`,
+      { privilege: input.privilege }
+    );
+    return resp.data.item;
+  }
+
+  async updateRoles(input: MembersUpdateRolesInput): Promise<Member | null> {
+    const resp = await this.http.put<{ item: Member | null }>(
+      `${this.orgPath()}/members/${input.memberId}/roles`,
+      { roleIds: input.roleIds }
+    );
+    return resp.data.item;
+  }
+
+  async updateManager(input: MembersUpdateManagerInput): Promise<Member | null> {
+    const resp = await this.http.put<{ item: Member | null }>(
+      `${this.orgPath()}/members/${input.memberId}/manager`,
+      { managerUid: input.managerUid }
+    );
+    return resp.data.item;
   }
 }

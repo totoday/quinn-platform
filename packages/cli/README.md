@@ -39,6 +39,8 @@ quinn organizations current
 
 ```bash
 # members
+quinn members create --email user@example.com --first-name Tom --last-name Lee
+quinn members create --email user@example.com --first-name Tom --last-name Lee --send-invite
 quinn members find alice
 quinn members list --privilege owner,admin
 quinn members get <memberId1,memberId2,user@example.com>

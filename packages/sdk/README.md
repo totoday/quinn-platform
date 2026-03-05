@@ -34,6 +34,16 @@ const people = await quinn.members.batchGet({
   ids: ["user-id-1"],
   emails: ["user@example.com"],
 });
+const created = await quinn.members.create({
+  email: "new.user@example.com",
+  firstName: "New",
+  lastName: "User",
+  sendInvite: false,
+});
+if (created) {
+  await quinn.members.updateRoles({ memberId: created.userId, roleIds: ["role-id"] });
+  await quinn.members.updateManager({ memberId: created.userId, managerUid: "manager-uid" });
+}
 
 // role -> level -> competencies
 const roles = await quinn.roles.list();

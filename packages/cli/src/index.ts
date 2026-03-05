@@ -383,6 +383,33 @@ orgCmd.addHelpText(
 
 const membersCmd = program.command('members').description('member operations');
 membersCmd
+  .command('create')
+  .description('create a member (sendInvite defaults to false)')
+  .requiredOption('--email <email>', 'member email')
+  .requiredOption('--first-name <name>', 'member first name')
+  .requiredOption('--last-name <name>', 'member last name')
+  .option('--send-invite', 'send invitation email (default false)')
+  .action(function (opts: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    sendInvite?: boolean;
+  }) {
+    return withHandler(async () => {
+      const { runtimeConfig } = getContext(this);
+      const quinn = createClient(runtimeConfig);
+      print(
+        await quinn.members.create({
+          email: opts.email,
+          firstName: opts.firstName,
+          lastName: opts.lastName,
+          sendInvite: Boolean(opts.sendInvite),
+        })
+      );
+    });
+  });
+
+membersCmd
   .command('list')
   .description('list members with structured filters (no keyword search)')
   .option('--privilege <value>', 'filter by privilege: owner|admin|member, supports comma-separated')
@@ -480,6 +507,8 @@ membersCmd.addHelpText(
   [
     '',
     'Examples:',
+    '  quinn members create --email user@example.com --first-name Tom --last-name Lee',
+    '  quinn members create --email user@example.com --first-name Tom --last-name Lee --send-invite',
     '  quinn members list --privilege owner,admin',
     '  quinn members list --manager-uid <uid>',
     '  quinn members find alice',

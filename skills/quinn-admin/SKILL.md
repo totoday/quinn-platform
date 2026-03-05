@@ -128,6 +128,14 @@ type Member = {
   phoneNumber: string | null;
 };
 
+// quinn members create --email ... --first-name ... --last-name ... [--send-invite]
+async function membersCreate(params: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  sendInvite?: boolean; // default false
+}): Promise<Member | null>;
+
 // quinn members list [--privilege ...] [--manager-uid ...] [--limit ...] [--page-token ...]
 async function membersList(params?: {
   privilege?: Privilege | Privilege[];
@@ -281,6 +289,7 @@ async function endorsementsList(
 ## SDK Manual (Optional)
 
 Use SDK when query logic requires multiple dependent calls or data composition.
+For member write operations, use SDK methods (not CLI commands).
 
 Initialization:
 
@@ -321,6 +330,24 @@ quinn.members.listManagers(params?: {
 
 quinn.members.get(id: string): Promise<Member | null>;
 quinn.members.batchGet(input: string[] | { ids?: string[]; emails?: string[] }): Promise<Member[]>;
+quinn.members.create(input: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  sendInvite?: boolean;
+}): Promise<Member | null>;
+quinn.members.updatePrivilege(input: {
+  memberId: string;
+  privilege: Privilege;
+}): Promise<Member | null>;
+quinn.members.updateRoles(input: {
+  memberId: string;
+  roleIds: string[];
+}): Promise<Member | null>;
+quinn.members.updateManager(input: {
+  memberId: string;
+  managerUid: string; // pass empty string to clear manager
+}): Promise<Member | null>;
 ```
 
 ### roles (`quinn.roles`)

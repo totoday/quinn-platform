@@ -50,6 +50,28 @@ export interface MembersBatchGetInput {
   emails?: string[];
 }
 
+export interface MembersCreateInput {
+  email: string;
+  firstName: string;
+  lastName: string;
+  sendInvite?: boolean;
+}
+
+export interface MembersUpdatePrivilegeInput {
+  memberId: string;
+  privilege: Privilege;
+}
+
+export interface MembersUpdateRolesInput {
+  memberId: string;
+  roleIds: string[];
+}
+
+export interface MembersUpdateManagerInput {
+  memberId: string;
+  managerUid: string;
+}
+
 export interface Role {
   id: string;
   label: string;
