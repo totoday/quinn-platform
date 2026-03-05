@@ -69,34 +69,31 @@ Endorsement rules:
 - Back conclusions with retrieved data
 - Clearly separate facts from assumptions
 
-## CLI Manual
+## CLI Setup (Minimal)
 
-Setup and installation are in `SETUP.md`.
+CLI is only for setup and connectivity checks.
+Do not use CLI for business read/write workflows.
 
-Command entrypoint:
+Use:
 
 ```bash
-npx quinn <resource> <action> ...
-# or one-off
-npx @totoday/quinn-cli <resource> <action> ...
+npx quinn login --email <email>
+npx quinn config get
+npx quinn test
 ```
 
-Shared aliases:
+## SDK Manual (Primary)
+
+Use SDK for all business queries and operations.
+
+Shared types:
 
 ```ts
 type Privilege = "owner" | "admin" | "member";
 type IsoDateTime = string;
 type Paged<T> = { items: T[]; nextToken: string };
-```
 
-### Organizations (`quinn organizations`)
-
-```ts
-type Organization = {
-  id: string;
-  name: string;
-};
-
+type Organization = { id: string; name: string };
 type OrganizationDetails = {
   organization: Organization | null;
   stats: {
@@ -108,13 +105,6 @@ type OrganizationDetails = {
   };
 };
 
-// quinn organizations current
-async function organizationsCurrent(): Promise<OrganizationDetails>;
-```
-
-### Members (`quinn members`)
-
-```ts
 type Member = {
   userId: string;
   email: string;
@@ -128,44 +118,6 @@ type Member = {
   phoneNumber: string | null;
 };
 
-// quinn members create --email ... --first-name ... --last-name ... [--send-invite]
-async function membersCreate(params: {
-  email: string;
-  firstName: string;
-  lastName: string;
-  sendInvite?: boolean; // default false
-}): Promise<Member | null>;
-
-// quinn members list [--privilege ...] [--manager-uid ...] [--limit ...] [--page-token ...]
-async function membersList(params?: {
-  privilege?: Privilege | Privilege[];
-  managerUid?: string;
-  limit?: number;
-  pageToken?: string;
-}): Promise<Paged<Member>>;
-
-// quinn members find <query> [--limit ...] [--page-token ...]
-async function membersFind(
-  query: string,
-  params?: { limit?: number; pageToken?: string },
-): Promise<Paged<Member>>;
-
-// quinn members list-managers [--search ...] [--limit ...] [--page-token ...]
-async function membersListManagers(params?: {
-  search?: string;
-  limit?: number;
-  pageToken?: string;
-}): Promise<Paged<Member>>;
-
-// quinn members get <idOrEmailOrCsv>
-async function membersGet(
-  idOrEmailOrCsv: string,
-): Promise<Member | null | Member[]>;
-```
-
-### Roles (`quinn roles`)
-
-```ts
 type Role = {
   id: string;
   label: string;
@@ -174,16 +126,6 @@ type Role = {
   updatedAt: IsoDateTime;
 };
 
-// quinn roles list
-async function rolesList(): Promise<Role[]>;
-
-// quinn roles get <roleIdOrCsv>
-async function rolesGet(roleIdOrCsv: string): Promise<Role | null | Role[]>;
-```
-
-### Levels (`quinn levels`)
-
-```ts
 type Level = {
   id: string;
   roleId: string;
@@ -198,29 +140,12 @@ type Level = {
   updatedAt: IsoDateTime;
 };
 
-// quinn levels list --role-id <roleId> [--limit ...] [--page-token ...]
-async function levelsList(params: {
-  roleId: string;
-  limit?: number;
-  pageToken?: string;
-}): Promise<Paged<Level>>;
-
-// quinn levels get <levelIdOrCsv>
-async function levelsGet(levelIdOrCsv: string): Promise<Level | null | Level[]>;
-```
-
-### Competencies (`quinn competencies`)
-
-```ts
 type Competency = {
   id: string;
   name: string;
   creatorUid: string;
   createdAt: IsoDateTime;
-  settings?: {
-    // true => manager endorsement flow; self-assessment is not required
-    managerOnlyEndorsement: boolean;
-  };
+  settings?: { managerOnlyEndorsement: boolean };
 };
 
 type Course = {
@@ -230,27 +155,6 @@ type Course = {
   createdAt: IsoDateTime;
 };
 
-// quinn competencies list --role-id <roleId> --level-id <levelId> [--search ...] [--limit ...] [--page-token ...]
-async function competenciesList(params: {
-  roleId: string;
-  levelId: string;
-  search?: string;
-  limit?: number;
-  pageToken?: string;
-}): Promise<Paged<Competency>>;
-
-// quinn competencies get <competencyIdOrCsv>
-async function competenciesGet(
-  competencyIdOrCsv: string,
-): Promise<Competency | null | Competency[]>;
-
-// quinn competencies courses <competencyId>
-async function competenciesCourses(competencyId: string): Promise<Course[]>;
-```
-
-### Endorsements (`quinn endorsements`)
-
-```ts
 type Endorsement = {
   id: string;
   uid: string;
@@ -267,29 +171,7 @@ type Endorsement = {
   createdAt: IsoDateTime;
   updatedAt: IsoDateTime;
 };
-
-// quinn endorsements get <endorsementId>
-async function endorsementsGet(
-  endorsementId: string,
-): Promise<Endorsement | null>;
-
-// quinn endorsements find --uid <uid> --competency-id <id>
-async function endorsementsFind(
-  uid: string,
-  competencyId: string,
-): Promise<Endorsement | null>;
-
-// quinn endorsements list --uids <u1,u2> --competency-ids <c1,c2>
-async function endorsementsList(
-  uidsCsv: string,
-  competencyIdsCsv: string,
-): Promise<Endorsement[]>;
 ```
-
-## SDK Manual (Optional)
-
-Use SDK when query logic requires multiple dependent calls or data composition.
-For member write operations, use SDK methods (not CLI commands).
 
 Initialization:
 
