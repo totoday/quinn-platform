@@ -1,6 +1,8 @@
 # @totoday/quinn-cli
 
-CLI for Quinn organization/member/role/competency queries.
+Minimal CLI for Quinn auth/config/connectivity setup.
+
+Business data operations should use `@totoday/quinn-sdk`.
 
 ## Install
 
@@ -15,44 +17,25 @@ One-off without global install:
 npx @totoday/quinn-cli --help
 ```
 
-## Quick Start
-
-Login (recommended: hidden password prompt):
+## Commands
 
 ```bash
+# login (recommended: hidden password prompt)
 quinn login --email <email>
-```
 
-Login via stdin (scripts/password managers):
-
-```bash
+# login via stdin (scripts/password managers)
 echo "<password>" | quinn login --email <email> --password-stdin
-```
 
-Check organization:
+# inspect local config
+quinn config path
+quinn config get
 
-```bash
-quinn organizations current
-```
+# update local config
+quinn config set --org-id <orgId>
+quinn config set --api-url <apiUrl> --api-token <token> --org-id <orgId>
 
-## Common Commands
-
-```bash
-# members
-quinn members create --email user@example.com --first-name Tom --last-name Lee
-quinn members create --email user@example.com --first-name Tom --last-name Lee --send-invite
-quinn members find alice
-quinn members list --privilege owner,admin
-quinn members get <memberId1,memberId2,user@example.com>
-
-# roles / levels / competencies
-quinn roles list
-quinn levels list --role-id <roleId>
-quinn competencies list --role-id <roleId> --level-id <levelId>
-
-# endorsements
-quinn endorsements find --uid <uid> --competency-id <competencyId>
-quinn endorsements list --uids <u1,u2> --competency-ids <c1,c2>
+# connectivity test (calls organizations.current via SDK)
+quinn test
 ```
 
 ## Config
