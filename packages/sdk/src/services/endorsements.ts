@@ -1,5 +1,10 @@
 import { AxiosInstance } from 'axios';
-import { Endorsement, ListEndorsementsInput } from '../types';
+import {
+  EndorseCompetencyInput,
+  Endorsement,
+  ListEndorsementsInput,
+  ResetEndorsementInput,
+} from '../types';
 
 export class EndorsementsService {
   constructor(
@@ -28,5 +33,21 @@ export class EndorsementsService {
       input
     );
     return resp.data.items;
+  }
+
+  async endorse(input: EndorseCompetencyInput): Promise<Endorsement | null> {
+    const resp = await this.http.post<{ item: Endorsement | null }>(
+      `${this.orgPath()}/endorsements/endorse`,
+      input
+    );
+    return resp.data.item;
+  }
+
+  async reset(input: ResetEndorsementInput): Promise<Endorsement | null> {
+    const resp = await this.http.post<{ item: Endorsement | null }>(
+      `${this.orgPath()}/endorsements/reset`,
+      input
+    );
+    return resp.data.item;
   }
 }

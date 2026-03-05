@@ -5,8 +5,8 @@ description: Quinn business analysis playbook using Quinn CLI/SDK. Use this skil
 
 # Quinn Admin Skill
 
-Version: 0.4.0  
-Updated: 2026-03-04  
+Version: 0.5.0  
+Updated: 2026-03-06  
 Compatibility: `@totoday/quinn-cli >= 0.1.1`, `@totoday/quinn-sdk >= 0.1.1`
 
 Use this skill to answer Quinn business questions in user-readable language with verifiable evidence.
@@ -93,7 +93,12 @@ type Privilege = "owner" | "admin" | "member";
 type IsoDateTime = string;
 type Paged<T> = { items: T[]; nextToken: string };
 
-type Organization = { id: string; name: string };
+type Organization = {
+  id: string;
+  name: string;
+  brandColor: string;
+  logo: { id: string; url: string } | null;
+};
 type OrganizationDetails = {
   organization: Organization | null;
   stats: {
@@ -155,6 +160,44 @@ type Course = {
   createdAt: IsoDateTime;
 };
 
+type Group = {
+  id: string;
+  name: string;
+  creatorUid: string;
+  createdAt: IsoDateTime;
+};
+
+type GroupMember = {
+  groupId: string;
+  userId: string;
+  addedByUid: string;
+  addedAt: IsoDateTime;
+};
+
+type Program = {
+  id: string;
+  name: string;
+  creatorUid: string;
+  createdAt: IsoDateTime;
+  settings?: { managerOnlyEndorsement: boolean };
+};
+
+type Progress = {
+  id: string;
+  userId: string;
+  courseId: string;
+  progressPct: number;
+  completedAt: IsoDateTime | null;
+  score: number | null;
+};
+
+type ProgressSummary = {
+  total: number;
+  numCompleted: number;
+  numInProgress: number;
+  numNotStarted: number;
+};
+
 type Endorsement = {
   id: string;
   uid: string;
@@ -191,6 +234,11 @@ node -e "const { Quinn } = require('@totoday/quinn-sdk'); const q = new Quinn();
 
 ```ts
 quinn.organizations.current(): Promise<OrganizationDetails>;
+quinn.organizations.update(input: {
+  name?: string;
+  logoId?: string;      // pass "" to clear logo
+  brandColor?: string;
+}): Promise<OrganizationDetails>;
 ```
 
 ### members (`quinn.members`)
@@ -230,6 +278,14 @@ quinn.members.updateManager(input: {
   memberId: string;
   managerUid: string; // pass empty string to clear manager
 }): Promise<Member | null>;
+quinn.members.updateProfile(input: {
+  memberId: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+}): Promise<Member | null>;
+quinn.members.delete(memberId: string): Promise<void>;
+quinn.members.batchDelete(input: string[] | { uids: string[] }): Promise<void>;
 ```
 
 ### roles (`quinn.roles`)
@@ -264,12 +320,64 @@ quinn.competencies.batchGet(ids: string[]): Promise<Competency[]>;
 quinn.competencies.listCourses(id: string): Promise<Course[]>;
 ```
 
+### courses (`quinn.courses`)
+
+```ts
+quinn.courses.list(params?: { limit?: number; token?: string }): Promise<Paged<Course>>;
+quinn.courses.get(id: string): Promise<Course | null>;
+quinn.courses.batchGet(ids: string[]): Promise<Course[]>;
+```
+
+### groups (`quinn.groups`)
+
+```ts
+quinn.groups.list(): Promise<Group[]>;
+quinn.groups.get(id: string): Promise<Group | null>;
+quinn.groups.batchGet(ids: string[]): Promise<Group[]>;
+quinn.groups.listMembers(groupId: string): Promise<GroupMember[]>;
+```
+
+### programs (`quinn.programs`)
+
+```ts
+quinn.programs.list(params?: { limit?: number; token?: string }): Promise<Paged<Program>>;
+quinn.programs.get(id: string): Promise<Program | null>;
+quinn.programs.batchGet(ids: string[]): Promise<Program[]>;
+```
+
+### progress (`quinn.progress`)
+
+```ts
+quinn.progress.list(input: { userIds?: string[]; courseIds?: string[] }): Promise<Progress[]>;
+quinn.progress.batchQuery(items: { userId: string; courseId: string }[]): Promise<Progress[]>;
+quinn.progress.summary(input: { userIds?: string[]; courseIds?: string[] }): Promise<ProgressSummary>;
+quinn.progress.courseSummary(courseId: string): Promise<ProgressSummary>;
+```
+
 ### endorsements (`quinn.endorsements`)
 
 ```ts
 quinn.endorsements.get(id: string): Promise<Endorsement | null>;
 quinn.endorsements.find(uid: string, competencyId: string): Promise<Endorsement | null>;
 quinn.endorsements.list(input: { uids: string[]; competencyIds: string[] }): Promise<Endorsement[]>;
+quinn.endorsements.endorse(input: { uid: string; competencyId: string; note?: string }): Promise<Endorsement | null>;
+quinn.endorsements.reset(input: { uid: string; competencyId: string; reason: string }): Promise<Endorsement | null>;
+```
+
+Minimal write example:
+
+```ts
+await quinn.endorsements.endorse({
+  uid: "member_uid",
+  competencyId: "competency_id",
+  note: "Reviewed in 1:1",
+});
+
+await quinn.endorsements.reset({
+  uid: "member_uid",
+  competencyId: "competency_id",
+  reason: "Evidence outdated after role change",
+});
 ```
 
 ## Data Integrity

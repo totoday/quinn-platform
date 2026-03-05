@@ -1,10 +1,12 @@
 import { AxiosInstance } from 'axios';
 import {
+  MembersBatchDeleteInput,
   Member,
   MembersBatchGetInput,
   MembersCreateInput,
   MembersListQuery,
   MembersUpdateManagerInput,
+  MembersUpdateProfileInput,
   MembersUpdatePrivilegeInput,
   MembersUpdateRolesInput,
   PagedResult,
@@ -59,6 +61,17 @@ export class MembersService {
     return resp.data.items;
   }
 
+  async delete(memberId: string): Promise<void> {
+    await this.http.delete(`${this.orgPath()}/members/${memberId}`);
+  }
+
+  async batchDelete(input: string[] | MembersBatchDeleteInput): Promise<void> {
+    const body: MembersBatchDeleteInput = Array.isArray(input)
+      ? { uids: input }
+      : input;
+    await this.http.post(`${this.orgPath()}/members/batch-delete`, body);
+  }
+
   async create(input: MembersCreateInput): Promise<Member | null> {
     const resp = await this.http.post<{ item: Member | null }>(
       `${this.orgPath()}/members`,
@@ -87,6 +100,18 @@ export class MembersService {
     const resp = await this.http.put<{ item: Member | null }>(
       `${this.orgPath()}/members/${input.memberId}/manager`,
       { managerUid: input.managerUid }
+    );
+    return resp.data.item;
+  }
+
+  async updateProfile(input: MembersUpdateProfileInput): Promise<Member | null> {
+    const resp = await this.http.patch<{ item: Member | null }>(
+      `${this.orgPath()}/members/${input.memberId}/profile`,
+      {
+        firstName: input.firstName,
+        lastName: input.lastName,
+        phoneNumber: input.phoneNumber,
+      }
     );
     return resp.data.item;
   }
