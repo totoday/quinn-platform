@@ -2,6 +2,7 @@ import { AxiosInstance } from 'axios';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { QuinnMutationAccess } from './mutation-access';
 
 export const DEFAULT_QUINN_API_URL = 'https://api.lunapark.com';
 
@@ -11,6 +12,7 @@ export interface QuinnClientConfig {
   orgId?: string;
   configPath?: string;
   httpClient?: AxiosInstance;
+  mutationAccess?: QuinnMutationAccess;
 }
 
 export interface QuinnResolvedConfig {
@@ -18,12 +20,14 @@ export interface QuinnResolvedConfig {
   token: string;
   orgId: string;
   httpClient?: AxiosInstance;
+  mutationAccess: QuinnMutationAccess;
 }
 
 interface QuinnFileConfig {
   apiUrl?: string;
   token?: string;
   orgId?: string;
+  mutationAccess?: QuinnMutationAccess;
 }
 
 export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfig {
@@ -38,6 +42,11 @@ export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfi
   );
   const token = firstNonEmpty(input.token, process.env.QUINN_API_TOKEN, fileConfig.token);
   const orgId = firstNonEmpty(input.orgId, process.env.QUINN_ORG_ID, fileConfig.orgId);
+  const mutationAccess = resolveMutationAccess(
+    input.mutationAccess,
+    process.env.QUINN_MUTATION_ACCESS,
+    fileConfig.mutationAccess
+  );
 
   if (!apiUrl) {
     throw new Error('missing apiUrl');
@@ -54,6 +63,7 @@ export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfi
     token,
     orgId,
     httpClient: input.httpClient,
+    mutationAccess,
   };
 }
 
@@ -88,10 +98,23 @@ function readConfigFile(configPath: string): QuinnFileConfig {
       apiUrl: asNonEmptyString(parsed.apiUrl),
       token: asNonEmptyString(parsed.token),
       orgId: asNonEmptyString(parsed.orgId),
+      mutationAccess: asMutationAccess(parsed.mutationAccess),
     };
   } catch {
     return {};
   }
+}
+
+function resolveMutationAccess(
+  ...values: Array<QuinnMutationAccess | string | undefined>
+): QuinnMutationAccess {
+  for (const value of values) {
+    const parsed = asMutationAccess(value);
+    if (parsed) {
+      return parsed;
+    }
+  }
+  return 'full_access';
 }
 
 function firstNonEmpty(...values: Array<string | undefined>): string | undefined {
@@ -110,4 +133,13 @@ function asNonEmptyString(value: string | undefined): string | undefined {
   }
   const trimmed = value.trim();
   return trimmed === '' ? undefined : trimmed;
+}
+
+function asMutationAccess(
+  value: QuinnMutationAccess | string | undefined
+): QuinnMutationAccess | undefined {
+  if (value !== 'read_only' && value !== 'needs_confirmation' && value !== 'full_access') {
+    return undefined;
+  }
+  return value;
 }

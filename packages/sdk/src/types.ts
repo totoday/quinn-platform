@@ -13,6 +13,11 @@ export interface PagedResult<T> {
 export interface Organization {
   id: string;
   name: string;
+  brandColor: string;
+  logo: {
+    id: string;
+    url: string;
+  } | null;
 }
 
 export interface OrganizationDetails {
@@ -24,6 +29,12 @@ export interface OrganizationDetails {
     levels: number;
     competencies: number;
   };
+}
+
+export interface OrganizationUpdateInput {
+  name?: string;
+  logoId?: string;
+  brandColor?: string;
 }
 
 export interface Member {
@@ -50,6 +61,10 @@ export interface MembersBatchGetInput {
   emails?: string[];
 }
 
+export interface MembersBatchDeleteInput {
+  uids: string[];
+}
+
 export interface MembersCreateInput {
   email: string;
   firstName: string;
@@ -70,6 +85,13 @@ export interface MembersUpdateRolesInput {
 export interface MembersUpdateManagerInput {
   memberId: string;
   managerUid: string;
+}
+
+export interface MembersUpdateProfileInput {
+  memberId: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
 }
 
 export interface Role {
@@ -121,6 +143,56 @@ export interface Course {
   createdAt: string;
 }
 
+export interface Group {
+  id: string;
+  name: string;
+  creatorUid: string;
+  createdAt: string;
+}
+
+export interface GroupMember {
+  groupId: string;
+  userId: string;
+  addedByUid: string;
+  addedAt: string;
+}
+
+export interface Program {
+  id: string;
+  name: string;
+  creatorUid: string;
+  createdAt: string;
+  settings?: {
+    managerOnlyEndorsement: boolean;
+  };
+}
+
+export interface Progress {
+  id: string;
+  userId: string;
+  courseId: string;
+  progressPct: number;
+  completedAt: string | null;
+  score: number | null;
+}
+
+export interface ProgressSummary {
+  total: number;
+  numCompleted: number;
+  numInProgress: number;
+  numNotStarted: number;
+}
+
+export interface ProgressesListInput {
+  userIds?: string[];
+  courseIds?: string[];
+}
+
+export interface ProgressesBatchQueryInputItem {
+  userId: string;
+  courseId: string;
+}
+
 export interface Endorsement {
   id: string;
   uid: string;
@@ -141,4 +213,16 @@ export interface Endorsement {
 export interface ListEndorsementsInput {
   uids: string[];
   competencyIds: string[];
+}
+
+export interface EndorseCompetencyInput {
+  uid: string;
+  competencyId: string;
+  note?: string;
+}
+
+export interface ResetEndorsementInput {
+  uid: string;
+  competencyId: string;
+  reason: string;
 }
