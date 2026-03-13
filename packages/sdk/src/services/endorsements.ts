@@ -9,7 +9,8 @@ import {
 export class EndorsementsService {
   constructor(
     private readonly http: AxiosInstance,
-    private readonly orgPath: () => string
+    private readonly orgPath: () => string,
+    private readonly assertMutationAllowed: (operation: string) => void
   ) {}
 
   async get(id: string): Promise<Endorsement | null> {
@@ -36,6 +37,7 @@ export class EndorsementsService {
   }
 
   async endorse(input: EndorseCompetencyInput): Promise<Endorsement | null> {
+    this.assertMutationAllowed('endorsements.endorse');
     const resp = await this.http.post<{ item: Endorsement | null }>(
       `${this.orgPath()}/endorsements/endorse`,
       input
@@ -44,6 +46,7 @@ export class EndorsementsService {
   }
 
   async reset(input: ResetEndorsementInput): Promise<Endorsement | null> {
+    this.assertMutationAllowed('endorsements.reset');
     const resp = await this.http.post<{ item: Endorsement | null }>(
       `${this.orgPath()}/endorsements/reset`,
       input

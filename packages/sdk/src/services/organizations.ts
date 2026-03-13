@@ -4,7 +4,8 @@ import { OrganizationDetails, OrganizationUpdateInput } from '../types';
 export class OrganizationsService {
   constructor(
     private readonly http: AxiosInstance,
-    private readonly orgPath: () => string
+    private readonly orgPath: () => string,
+    private readonly assertMutationAllowed: (operation: string) => void
   ) {}
 
   async current(): Promise<OrganizationDetails> {
@@ -13,6 +14,7 @@ export class OrganizationsService {
   }
 
   async update(input: OrganizationUpdateInput): Promise<OrganizationDetails> {
+    this.assertMutationAllowed('organizations.update');
     const resp = await this.http.patch<{ item: OrganizationDetails }>(
       this.orgPath(),
       input
