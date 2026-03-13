@@ -8,8 +8,7 @@ import {
 
 export class ProgressService {
   constructor(
-    private readonly http: AxiosInstance,
-    private readonly orgPath: () => string
+    private readonly http: AxiosInstance
   ) {}
 
   async list(input: ProgressesListInput): Promise<Progress[]> {
@@ -18,7 +17,7 @@ export class ProgressService {
       courseIds: input.courseIds?.join(','),
     };
     const resp = await this.http.get<{ items: Progress[] }>(
-      `${this.orgPath()}/progress`,
+      '/progress',
       { params }
     );
     return resp.data.items;
@@ -26,7 +25,7 @@ export class ProgressService {
 
   async batchQuery(items: ProgressesBatchQueryInputItem[]): Promise<Progress[]> {
     const resp = await this.http.post<{ items: Progress[] }>(
-      `${this.orgPath()}/progress/batch`,
+      '/progress/batch',
       { items }
     );
     return resp.data.items;
@@ -38,7 +37,7 @@ export class ProgressService {
       courseIds: input.courseIds?.join(','),
     };
     const resp = await this.http.get<{ item: ProgressSummary }>(
-      `${this.orgPath()}/progress/summary`,
+      '/progress/summary',
       { params }
     );
     return resp.data.item;
@@ -46,7 +45,7 @@ export class ProgressService {
 
   async courseSummary(courseId: string): Promise<ProgressSummary> {
     const resp = await this.http.get<{ item: ProgressSummary }>(
-      `${this.orgPath()}/progress/summary/courses/${courseId}`
+      `/progress/summary/courses/${courseId}`
     );
     return resp.data.item;
   }
