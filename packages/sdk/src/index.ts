@@ -51,32 +51,22 @@ export class Quinn {
     this.config = resolveQuinnConfig(config);
     this.http =
       this.config.httpClient ??
-      createQuinnHttpClient({ apiUrl: this.config.apiUrl, token: this.config.token });
-    this.organizations = new OrganizationsService(
-      this.http,
-      this.orgPath,
-      this.assertMutationAllowed
-    );
-    this.members = new MembersService(
-      this.http,
-      this.orgPath,
-      this.assertMutationAllowed
-    );
-    this.roles = new RolesService(this.http, this.orgPath);
-    this.levels = new LevelsService(this.http, this.orgPath);
-    this.competencies = new CompetenciesService(this.http, this.orgPath);
-    this.courses = new CoursesService(this.http, this.orgPath);
-    this.groups = new GroupsService(this.http, this.orgPath);
-    this.programs = new ProgramsService(this.http, this.orgPath);
-    this.progress = new ProgressService(this.http, this.orgPath);
-    this.endorsements = new EndorsementsService(
-      this.http,
-      this.orgPath,
-      this.assertMutationAllowed
-    );
+      createQuinnHttpClient({
+        apiUrl: this.config.apiUrl,
+        token: this.config.token,
+        orgId: this.config.orgId,
+      });
+    this.organizations = new OrganizationsService(this.http, this.assertMutationAllowed);
+    this.members = new MembersService(this.http, this.assertMutationAllowed);
+    this.roles = new RolesService(this.http);
+    this.levels = new LevelsService(this.http);
+    this.competencies = new CompetenciesService(this.http);
+    this.courses = new CoursesService(this.http);
+    this.groups = new GroupsService(this.http);
+    this.programs = new ProgramsService(this.http);
+    this.progress = new ProgressService(this.http);
+    this.endorsements = new EndorsementsService(this.http, this.assertMutationAllowed);
   }
-
-  private orgPath = () => `/platform/v1/orgs/${this.config.orgId}`;
 
   private assertMutationAllowed = (operation: string): void => {
     assertMutationAllowed(this.config.mutationAccess, operation);

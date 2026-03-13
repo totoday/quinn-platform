@@ -15,7 +15,6 @@ import {
 export class MembersService {
   constructor(
     private readonly http: AxiosInstance,
-    private readonly orgPath: () => string,
     private readonly assertMutationAllowed: (operation: string) => void
   ) {}
 
@@ -30,23 +29,22 @@ export class MembersService {
         : query.privilege,
     };
     const resp = await this.http.get<PagedResult<Member>>(
-      `${this.orgPath()}/members`,
+      '/members',
       { params }
     );
     return resp.data;
   }
 
   async listManagers(query: { limit?: number; token?: string; search?: string } = {}): Promise<PagedResult<Member>> {
-    const resp = await this.http.get<PagedResult<Member>>(
-      `${this.orgPath()}/members/managers`,
-      { params: query }
-    );
+    const resp = await this.http.get<PagedResult<Member>>('/members/managers', {
+      params: query,
+    });
     return resp.data;
   }
 
   async get(id: string): Promise<Member | null> {
     const resp = await this.http.get<{ item: Member | null }>(
-      `${this.orgPath()}/members/${id}`
+      `/members/${id}`
     );
     return resp.data.item;
   }
@@ -56,7 +54,7 @@ export class MembersService {
       ? { ids: input }
       : input;
     const resp = await this.http.post<{ items: Member[] }>(
-      `${this.orgPath()}/members/batch`,
+      '/members/batch',
       body
     );
     return resp.data.items;
@@ -64,7 +62,7 @@ export class MembersService {
 
   async delete(memberId: string): Promise<void> {
     this.assertMutationAllowed('members.delete');
-    await this.http.delete(`${this.orgPath()}/members/${memberId}`);
+    await this.http.delete(`/members/${memberId}`);
   }
 
   async batchDelete(input: string[] | MembersBatchDeleteInput): Promise<void> {
@@ -72,13 +70,13 @@ export class MembersService {
     const body: MembersBatchDeleteInput = Array.isArray(input)
       ? { uids: input }
       : input;
-    await this.http.post(`${this.orgPath()}/members/batch-delete`, body);
+    await this.http.post('/members/batch-delete', body);
   }
 
   async create(input: MembersCreateInput): Promise<Member | null> {
     this.assertMutationAllowed('members.create');
     const resp = await this.http.post<{ item: Member | null }>(
-      `${this.orgPath()}/members`,
+      '/members',
       input
     );
     return resp.data.item;
@@ -87,7 +85,7 @@ export class MembersService {
   async updatePrivilege(input: MembersUpdatePrivilegeInput): Promise<Member | null> {
     this.assertMutationAllowed('members.updatePrivilege');
     const resp = await this.http.patch<{ item: Member | null }>(
-      `${this.orgPath()}/members/${input.memberId}/privilege`,
+      `/members/${input.memberId}/privilege`,
       { privilege: input.privilege }
     );
     return resp.data.item;
@@ -96,7 +94,7 @@ export class MembersService {
   async updateRoles(input: MembersUpdateRolesInput): Promise<Member | null> {
     this.assertMutationAllowed('members.updateRoles');
     const resp = await this.http.put<{ item: Member | null }>(
-      `${this.orgPath()}/members/${input.memberId}/roles`,
+      `/members/${input.memberId}/roles`,
       { roleIds: input.roleIds }
     );
     return resp.data.item;
@@ -105,7 +103,7 @@ export class MembersService {
   async updateManager(input: MembersUpdateManagerInput): Promise<Member | null> {
     this.assertMutationAllowed('members.updateManager');
     const resp = await this.http.put<{ item: Member | null }>(
-      `${this.orgPath()}/members/${input.memberId}/manager`,
+      `/members/${input.memberId}/manager`,
       { managerUid: input.managerUid }
     );
     return resp.data.item;
@@ -114,7 +112,7 @@ export class MembersService {
   async updateProfile(input: MembersUpdateProfileInput): Promise<Member | null> {
     this.assertMutationAllowed('members.updateProfile');
     const resp = await this.http.patch<{ item: Member | null }>(
-      `${this.orgPath()}/members/${input.memberId}/profile`,
+      `/members/${input.memberId}/profile`,
       {
         firstName: input.firstName,
         lastName: input.lastName,
