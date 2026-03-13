@@ -1,5 +1,11 @@
 # @totoday/quinn-sdk
 
+## 0.1.3
+
+### Patch Changes
+
+- 16a1fe9: Move organization path handling into the shared HTTP client to simplify service construction.
+
 ## 0.1.2
 
 ### Patch Changes
