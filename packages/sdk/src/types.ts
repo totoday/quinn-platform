@@ -143,6 +143,62 @@ export interface Course {
   createdAt: string;
 }
 
+export interface KnowledgeSearchInput {
+  query: string;
+  folderId?: string;
+  size?: number;
+}
+
+export interface KnowledgeSearchHit {
+  id: string;
+  type: string;
+  text: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface KnowledgeDocument {
+  id: string;
+  name: string;
+  uid: string;
+  orgId: string;
+  parentId: string;
+  parentType: string;
+  status: string;
+  extFileId: string | null;
+  contentType: string | null;
+  originalContentLength: number;
+  contentLength: number;
+  downloadable: boolean;
+  folderId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KnowledgeDocumentsListQuery extends PaginationQuery {
+  folderId?: string;
+  name?: string;
+  includePackFiles?: boolean;
+}
+
+export interface GetDocumentTranscriptResponse {
+  content: string;
+}
+
+export interface KnowledgeFolder {
+  id: string;
+  orgId: string;
+  name: string;
+  parentId: string | null;
+  createdBy: string;
+  children?: KnowledgeFolder[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KnowledgeFoldersListQuery {
+  parentId?: string;
+}
+
 export interface Group {
   id: string;
   name: string;

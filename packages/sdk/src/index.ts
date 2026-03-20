@@ -15,6 +15,7 @@ import { CompetenciesService } from './services/competencies';
 import { CoursesService } from './services/courses';
 import { EndorsementsService } from './services/endorsements';
 import { GroupsService } from './services/groups';
+import { KnowledgeService } from './services/knowledge';
 import { LevelsService } from './services/levels';
 import { MembersService } from './services/members';
 import { OrganizationsService } from './services/organizations';
@@ -32,11 +33,17 @@ export {
 export type { QuinnClientConfig } from './config';
 export type { QuinnMutationAccess } from './mutation-access';
 export { QuinnMutationAccessError } from './mutation-access';
+export {
+  KnowledgeDocumentsService,
+  KnowledgeFoldersService,
+  KnowledgeService,
+} from './services/knowledge';
 
 export class Quinn {
   private readonly config: QuinnResolvedConfig;
   private readonly http: AxiosInstance;
   readonly organizations: OrganizationsService;
+  readonly knowledge: KnowledgeService;
   readonly members: MembersService;
   readonly roles: RolesService;
   readonly levels: LevelsService;
@@ -57,6 +64,7 @@ export class Quinn {
         orgId: this.config.orgId,
       });
     this.organizations = new OrganizationsService(this.http, this.assertMutationAllowed);
+    this.knowledge = new KnowledgeService(this.http);
     this.members = new MembersService(this.http, this.assertMutationAllowed);
     this.roles = new RolesService(this.http);
     this.levels = new LevelsService(this.http);
