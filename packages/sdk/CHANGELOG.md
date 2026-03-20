@@ -1,5 +1,11 @@
 # @totoday/quinn-sdk
 
+## 0.2.0
+
+### Minor Changes
+
+- 7fc166f: Add Knowledge API client on `Quinn` (`documents`, `folders`, `search`), related types, and re-exports for Knowledge service classes.
+
 ## 0.1.3
 
 ### Patch Changes
