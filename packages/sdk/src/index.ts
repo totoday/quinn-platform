@@ -33,6 +33,11 @@ export {
 export type { QuinnClientConfig } from './config';
 export type { QuinnMutationAccess } from './mutation-access';
 export { QuinnMutationAccessError } from './mutation-access';
+export {
+  KnowledgeDocumentsService,
+  KnowledgeFoldersService,
+  KnowledgeService,
+} from './services/knowledge';
 
 export class Quinn {
   private readonly config: QuinnResolvedConfig;
