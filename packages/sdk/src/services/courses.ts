@@ -1,9 +1,18 @@
 import { AxiosInstance } from 'axios';
-import { Course, PagedResult } from '../types';
+import {
+  AssignedUser,
+  Course,
+  CoursesAssignToGroupsInput,
+  CoursesAssignToUsersInput,
+  CoursesUnassignFromGroupInput,
+  CoursesUnassignFromUserInput,
+  PagedResult,
+} from '../types';
 
 export class CoursesService {
   constructor(
-    private readonly http: AxiosInstance
+    private readonly http: AxiosInstance,
+    private readonly assertMutationAllowed: (operation: string) => void
   ) {}
 
   async list(query: { limit?: number; token?: string } = {}): Promise<PagedResult<Course>> {
@@ -27,5 +36,38 @@ export class CoursesService {
       { ids }
     );
     return resp.data.items;
+  }
+
+  async assignToUsers(input: CoursesAssignToUsersInput): Promise<AssignedUser[]> {
+    this.assertMutationAllowed('courses.assignToUsers');
+    const resp = await this.http.post<{ assignedUsers: AssignedUser[] }>(
+      `/courses/${input.courseId}/assign/users`,
+      {
+        userIds: input.userIds,
+        dueDateConfig: input.dueDateConfig,
+      }
+    );
+    return resp.data.assignedUsers;
+  }
+
+  async assignToGroups(input: CoursesAssignToGroupsInput): Promise<void> {
+    this.assertMutationAllowed('courses.assignToGroups');
+    await this.http.post(
+      `/courses/${input.courseId}/assign/groups`,
+      {
+        groupIds: input.groupIds,
+        dueDateConfig: input.dueDateConfig,
+      }
+    );
+  }
+
+  async unassignFromUser(input: CoursesUnassignFromUserInput): Promise<void> {
+    this.assertMutationAllowed('courses.unassignFromUser');
+    await this.http.delete(`/courses/${input.courseId}/users/${input.userId}`);
+  }
+
+  async unassignFromGroup(input: CoursesUnassignFromGroupInput): Promise<void> {
+    this.assertMutationAllowed('courses.unassignFromGroup');
+    await this.http.delete(`/courses/${input.courseId}/groups/${input.groupId}`);
   }
 }

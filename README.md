@@ -15,7 +15,6 @@ Quinn CLI + SDK monorepo for agent-friendly organization/role/competency queries
 
 - `packages/sdk`
 - `packages/cli`
-- `skills/quinn-admin`
 
 ## Local Development
 

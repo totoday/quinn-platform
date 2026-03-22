@@ -1,9 +1,19 @@
 import { AxiosInstance } from 'axios';
-import { Group, GroupMember } from '../types';
+import {
+  AssignedUser,
+  Group,
+  GroupMember,
+  GroupsAddMembersInput,
+  GroupsCreateInput,
+  GroupsCreateResult,
+  GroupsRemoveMemberInput,
+  GroupsUpdateNameInput,
+} from '../types';
 
 export class GroupsService {
   constructor(
     private readonly http: AxiosInstance,
+    private readonly assertMutationAllowed: (operation: string) => void,
   ) {}
 
   async list(): Promise<Group[]> {
@@ -33,5 +43,38 @@ export class GroupsService {
       `/groups/${groupId}/members`
     );
     return resp.data.items;
+  }
+
+  async create(input: GroupsCreateInput): Promise<GroupsCreateResult> {
+    this.assertMutationAllowed('groups.create');
+    const resp = await this.http.post<GroupsCreateResult>('/groups', input);
+    return resp.data;
+  }
+
+  async updateName(input: GroupsUpdateNameInput): Promise<Group | null> {
+    this.assertMutationAllowed('groups.updateName');
+    const resp = await this.http.put<{ item: Group | null }>(
+      `/groups/${input.groupId}/name`,
+      { name: input.name }
+    );
+    return resp.data.item;
+  }
+
+  async delete(groupId: string): Promise<void> {
+    this.assertMutationAllowed('groups.delete');
+    await this.http.delete(`/groups/${groupId}`);
+  }
+
+  async addMembers(input: GroupsAddMembersInput): Promise<AssignedUser[]> {
+    this.assertMutationAllowed('groups.addMembers');
+    const resp = await this.http.post<{ assignedUsers: AssignedUser[] }>(`/groups/${input.groupId}/members`, {
+      userIds: input.userIds,
+    });
+    return resp.data.assignedUsers;
+  }
+
+  async removeMember(input: GroupsRemoveMemberInput): Promise<void> {
+    this.assertMutationAllowed('groups.removeMember');
+    await this.http.delete(`/groups/${input.groupId}/members/${input.userId}`);
   }
 }

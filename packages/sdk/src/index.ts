@@ -66,11 +66,11 @@ export class Quinn {
     this.organizations = new OrganizationsService(this.http, this.assertMutationAllowed);
     this.knowledge = new KnowledgeService(this.http);
     this.members = new MembersService(this.http, this.assertMutationAllowed);
-    this.roles = new RolesService(this.http);
+    this.roles = new RolesService(this.http, this.assertMutationAllowed);
     this.levels = new LevelsService(this.http);
-    this.competencies = new CompetenciesService(this.http);
-    this.courses = new CoursesService(this.http);
-    this.groups = new GroupsService(this.http);
+    this.competencies = new CompetenciesService(this.http, this.assertMutationAllowed);
+    this.courses = new CoursesService(this.http, this.assertMutationAllowed);
+    this.groups = new GroupsService(this.http, this.assertMutationAllowed);
     this.programs = new ProgramsService(this.http);
     this.progress = new ProgressService(this.http);
     this.endorsements = new EndorsementsService(this.http, this.assertMutationAllowed);

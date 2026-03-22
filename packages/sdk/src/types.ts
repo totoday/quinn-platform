@@ -22,13 +22,6 @@ export interface Organization {
 
 export interface OrganizationDetails {
   organization: Organization | null;
-  stats: {
-    members: number;
-    managers: number;
-    roles: number;
-    levels: number;
-    competencies: number;
-  };
 }
 
 export interface OrganizationUpdateInput {
@@ -46,7 +39,6 @@ export interface Member {
   managerUid: string | null;
   roleIds: string[];
   createdAt: string;
-  activatedAt: string | null;
   phoneNumber: string | null;
 }
 
@@ -102,6 +94,25 @@ export interface Role {
   updatedAt: string;
 }
 
+export interface RolesCreateInput {
+  label: string;
+}
+
+export interface RolesUpdateInput {
+  roleId: string;
+  label?: string;
+}
+
+export interface RoleLevelInput {
+  id?: string;
+  name: string;
+}
+
+export interface RolesUpdateLevelsInput {
+  roleId: string;
+  levels: RoleLevelInput[];
+}
+
 export interface Level {
   id: string;
   roleId: string;
@@ -123,10 +134,32 @@ export interface LevelsListQuery extends PaginationQuery {
 export interface Competency {
   id: string;
   name: string;
+  description: string;
   creatorUid: string;
   createdAt: string;
   settings?: {
     managerOnlyEndorsement: boolean;
+  };
+}
+
+export interface CompetenciesCreateInput {
+  name: string;
+  description?: string;
+  roleId: string;
+  levelIds: string[];
+  settings?: {
+    managerOnlyEndorsement?: boolean;
+  };
+}
+
+export interface CompetenciesUpdateInput {
+  competencyId: string;
+  name?: string;
+  description?: string;
+  roleId?: string;
+  levelIds?: string[];
+  settings?: {
+    managerOnlyEndorsement?: boolean;
   };
 }
 
@@ -143,6 +176,43 @@ export interface Course {
   createdAt: string;
 }
 
+export type DueDateType = 'fixed' | 'relative';
+
+export interface AssignmentDueConfig {
+  type: DueDateType;
+  fixedDate?: string;
+  timezone?: string;
+  relativeDays?: number;
+}
+
+export interface AssignedUser {
+  email: string;
+  userId: string;
+  assigned: boolean;
+}
+
+export interface CoursesAssignToUsersInput {
+  courseId: string;
+  userIds: string[];
+  dueDateConfig?: AssignmentDueConfig;
+}
+
+export interface CoursesAssignToGroupsInput {
+  courseId: string;
+  groupIds: string[];
+  dueDateConfig?: AssignmentDueConfig;
+}
+
+export interface CoursesUnassignFromUserInput {
+  courseId: string;
+  userId: string;
+}
+
+export interface CoursesUnassignFromGroupInput {
+  courseId: string;
+  groupId: string;
+}
+
 export interface KnowledgeSearchInput {
   query: string;
   folderId?: string;
@@ -153,6 +223,9 @@ export interface KnowledgeSearchHit {
   id: string;
   type: string;
   text: string;
+  documentId?: string | null;
+  courseId?: string | null;
+  blockId?: string | null;
   metadata?: Record<string, unknown>;
 }
 
@@ -213,14 +286,37 @@ export interface GroupMember {
   addedAt: string;
 }
 
+export interface GroupsCreateInput {
+  name: string;
+  userIds?: string[];
+}
+
+export interface GroupsCreateResult {
+  group: Group;
+  assignedUsers: AssignedUser[];
+}
+
+export interface GroupsUpdateNameInput {
+  groupId: string;
+  name: string;
+}
+
+export interface GroupsAddMembersInput {
+  groupId: string;
+  userIds: string[];
+}
+
+export interface GroupsRemoveMemberInput {
+  groupId: string;
+  userId: string;
+}
+
 export interface Program {
   id: string;
   name: string;
+  description: string;
   creatorUid: string;
   createdAt: string;
-  settings?: {
-    managerOnlyEndorsement: boolean;
-  };
 }
 
 export interface Progress {

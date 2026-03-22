@@ -1,5 +1,5 @@
 import { AxiosInstance } from 'axios';
-import { PagedResult, Program } from '../types';
+import { Course, PagedResult, Program } from '../types';
 
 export class ProgramsService {
   constructor(
@@ -25,6 +25,13 @@ export class ProgramsService {
     const resp = await this.http.post<{ items: Program[] }>(
       '/programs/batch',
       { ids }
+    );
+    return resp.data.items;
+  }
+
+  async listCourses(id: string): Promise<Course[]> {
+    const resp = await this.http.get<{ items: Course[] }>(
+      `/programs/${id}/courses`
     );
     return resp.data.items;
   }
