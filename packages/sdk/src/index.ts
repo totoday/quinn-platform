@@ -6,11 +6,7 @@ import {
   resolveQuinnConfig,
 } from './config';
 import { createQuinnHttpClient } from './http';
-import {
-  assertMutationAllowed,
-  QuinnMutationAccess,
-  QuinnMutationAccessError,
-} from './mutation-access';
+import { assertMutationAllowed, QuinnMutationGuardError } from './mutation-access';
 import { CompetenciesService } from './services/competencies';
 import { CoursesService } from './services/courses';
 import { EndorsementsService } from './services/endorsements';
@@ -31,8 +27,7 @@ export {
   resolveConfigPath,
 } from './config';
 export type { QuinnClientConfig } from './config';
-export type { QuinnMutationAccess } from './mutation-access';
-export { QuinnMutationAccessError } from './mutation-access';
+export { QuinnMutationGuardError } from './mutation-access';
 export {
   KnowledgeDocumentsService,
   KnowledgeFoldersService,
@@ -77,6 +72,6 @@ export class Quinn {
   }
 
   private assertMutationAllowed = (operation: string): void => {
-    assertMutationAllowed(this.config.mutationAccess, operation);
+    assertMutationAllowed(this.config.allowQuinnMutation, operation);
   };
 }

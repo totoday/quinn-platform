@@ -70,25 +70,21 @@ Default `apiUrl` is `https://api.lunapark.com`.
 
 `token` and `orgId` are required.
 
-## Mutation Access
+## Mutation Guard
 
-By default, the SDK preserves current behavior and uses `mutationAccess: "full_access"`.
+By default, the SDK preserves current behavior and uses `allowQuinnMutation: true`.
 
-You can explicitly restrict Quinn business mutations:
+You can explicitly block Quinn business mutations:
 
 ```ts
 import { Quinn } from "@totoday/quinn-sdk";
 
 const quinn = new Quinn({
-  mutationAccess: "read_only",
+  allowQuinnMutation: false,
 });
 ```
 
-Supported values:
-
-- `read_only`: blocks SDK mutation methods
-- `needs_confirmation`: also blocks mutation methods for now, but throws a distinct confirmation-required error
-- `full_access`: allows mutation methods
+You can also provide `QUINN_ALLOW_QUINN_MUTATION=false` through the environment.
 
 This setting does not affect local file writes or sandbox execution. It only gates Quinn business mutations through the SDK.
 

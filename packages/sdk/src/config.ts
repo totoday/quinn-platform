@@ -2,7 +2,6 @@ import { AxiosInstance } from 'axios';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { QuinnMutationAccess } from './mutation-access';
 
 export const DEFAULT_QUINN_API_URL = 'https://api.lunapark.com';
 
@@ -12,7 +11,7 @@ export interface QuinnClientConfig {
   orgId?: string;
   configPath?: string;
   httpClient?: AxiosInstance;
-  mutationAccess?: QuinnMutationAccess;
+  allowQuinnMutation?: boolean;
 }
 
 export interface QuinnResolvedConfig {
@@ -20,14 +19,14 @@ export interface QuinnResolvedConfig {
   token: string;
   orgId: string;
   httpClient?: AxiosInstance;
-  mutationAccess: QuinnMutationAccess;
+  allowQuinnMutation: boolean;
 }
 
 interface QuinnFileConfig {
   apiUrl?: string;
   token?: string;
   orgId?: string;
-  mutationAccess?: QuinnMutationAccess;
+  allowQuinnMutation?: boolean;
 }
 
 export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfig {
@@ -42,10 +41,10 @@ export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfi
   );
   const token = firstNonEmpty(input.token, process.env.QUINN_API_TOKEN, fileConfig.token);
   const orgId = firstNonEmpty(input.orgId, process.env.QUINN_ORG_ID, fileConfig.orgId);
-  const mutationAccess = resolveMutationAccess(
-    input.mutationAccess,
-    process.env.QUINN_MUTATION_ACCESS,
-    fileConfig.mutationAccess
+  const allowQuinnMutation = resolveAllowQuinnMutation(
+    input.allowQuinnMutation,
+    process.env.QUINN_ALLOW_QUINN_MUTATION,
+    fileConfig.allowQuinnMutation
   );
 
   if (!apiUrl) {
@@ -63,7 +62,7 @@ export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfi
     token,
     orgId,
     httpClient: input.httpClient,
-    mutationAccess,
+    allowQuinnMutation,
   };
 }
 
@@ -98,23 +97,23 @@ function readConfigFile(configPath: string): QuinnFileConfig {
       apiUrl: asNonEmptyString(parsed.apiUrl),
       token: asNonEmptyString(parsed.token),
       orgId: asNonEmptyString(parsed.orgId),
-      mutationAccess: asMutationAccess(parsed.mutationAccess),
+      allowQuinnMutation: asBoolean(parsed.allowQuinnMutation),
     };
   } catch {
     return {};
   }
 }
 
-function resolveMutationAccess(
-  ...values: Array<QuinnMutationAccess | string | undefined>
-): QuinnMutationAccess {
+function resolveAllowQuinnMutation(
+  ...values: Array<boolean | string | undefined>
+): boolean {
   for (const value of values) {
-    const parsed = asMutationAccess(value);
-    if (parsed) {
+    const parsed = asBoolean(value);
+    if (parsed !== undefined) {
       return parsed;
     }
   }
-  return 'full_access';
+  return true;
 }
 
 function firstNonEmpty(...values: Array<string | undefined>): string | undefined {
@@ -135,11 +134,22 @@ function asNonEmptyString(value: string | undefined): string | undefined {
   return trimmed === '' ? undefined : trimmed;
 }
 
-function asMutationAccess(
-  value: QuinnMutationAccess | string | undefined
-): QuinnMutationAccess | undefined {
-  if (value !== 'read_only' && value !== 'needs_confirmation' && value !== 'full_access') {
+function asBoolean(value: boolean | string | undefined): boolean | undefined {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value !== 'string') {
     return undefined;
   }
-  return value;
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'true' || normalized === '1' || normalized === 'yes') {
+    return true;
+  }
+  if (normalized === 'false' || normalized === '0' || normalized === 'no') {
+    return false;
+  }
+
+  return undefined;
 }

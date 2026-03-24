@@ -32,7 +32,7 @@
   This adds:
 
   - `mutationAccess` support in `new Quinn({ ... })`, environment config, and config-file resolution
-  - a shared mutation access error type and guard
+  - a shared mutation guard error type and guard
   - mutation checks for SDK write operations such as organization updates, member mutations, and endorsement mutations
 
   The default SDK behavior remains `full_access`, so existing scripts and CLI usage continue to work unless they explicitly opt into a more restrictive mutation mode.

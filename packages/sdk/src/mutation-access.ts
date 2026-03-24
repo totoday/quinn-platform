@@ -1,49 +1,34 @@
-export type QuinnMutationAccess =
-  | 'read_only'
-  | 'needs_confirmation'
-  | 'full_access';
-
-export class QuinnMutationAccessError extends Error {
-  readonly access: QuinnMutationAccess;
+export class QuinnMutationGuardError extends Error {
+  readonly allowQuinnMutation: boolean;
   readonly operation: string;
-  readonly code: 'MUTATION_BLOCKED' | 'MUTATION_CONFIRMATION_REQUIRED';
+  readonly code: 'MUTATION_BLOCKED';
 
   constructor(input: {
-    access: QuinnMutationAccess;
+    allowQuinnMutation: boolean;
     operation: string;
-    code: 'MUTATION_BLOCKED' | 'MUTATION_CONFIRMATION_REQUIRED';
+    code: 'MUTATION_BLOCKED';
     message: string;
   }) {
     super(input.message);
-    this.name = 'QuinnMutationAccessError';
-    this.access = input.access;
+    this.name = 'QuinnMutationGuardError';
+    this.allowQuinnMutation = input.allowQuinnMutation;
     this.operation = input.operation;
     this.code = input.code;
   }
 }
 
 export function assertMutationAllowed(
-  access: QuinnMutationAccess,
+  allowQuinnMutation: boolean,
   operation: string
 ): void {
-  if (access === 'full_access') {
+  if (allowQuinnMutation) {
     return;
   }
 
-  if (access === 'needs_confirmation') {
-    throw new QuinnMutationAccessError({
-      access,
-      operation,
-      code: 'MUTATION_CONFIRMATION_REQUIRED',
-      message: `Quinn SDK mutation requires confirmation before executing "${operation}".`,
-    });
-  }
-
-  throw new QuinnMutationAccessError({
-    access,
+  throw new QuinnMutationGuardError({
+    allowQuinnMutation,
     operation,
     code: 'MUTATION_BLOCKED',
-    message: `Quinn SDK mutation blocked because mutationAccess is "${access}" for "${operation}".`,
+    message: `Quinn SDK mutation blocked because allowQuinnMutation is false for "${operation}".`,
   });
 }
-
