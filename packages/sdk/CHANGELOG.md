@@ -1,5 +1,11 @@
 # @totoday/quinn-sdk
 
+## 0.3.0
+
+### Minor Changes
+
+- cf45305: Replace the old `mutationAccess` SDK config with `allowQuinnMutation`, rename the public mutation error to `QuinnMutationGuardError`, and switch the runtime environment flag to `QUINN_ALLOW_QUINN_MUTATION`.
+
 ## 0.2.1
 
 ### Patch Changes
