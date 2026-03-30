@@ -1,5 +1,12 @@
 # @totoday/quinn-cli
 
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies [43fa161]
+  - @totoday/quinn-sdk@1.0.0
+
 ## 0.3.0
 
 ### Patch Changes
