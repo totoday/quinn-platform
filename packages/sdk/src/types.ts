@@ -15,7 +15,7 @@ export interface Organization {
   name: string;
   brandColor: string;
   logo: {
-    id: string;
+    mediaId: string;
     url: string;
   } | null;
 }
@@ -26,7 +26,7 @@ export interface OrganizationDetails {
 
 export interface OrganizationUpdateInput {
   name?: string;
-  logoId?: string;
+  logoMediaId?: string;
   brandColor?: string;
 }
 
@@ -123,6 +123,8 @@ export interface Role {
   updatedAt: string;
 }
 
+export interface RolesListQuery extends PaginationQuery {}
+
 export interface RolesCreateInput {
   label: string;
 }
@@ -201,7 +203,7 @@ export interface CompetenciesListQuery extends PaginationQuery {
 export type CourseType = 'training' | 'assessment' | 'sign-off';
 
 export interface MediaRef {
-  id: string;
+  mediaId: string;
   url: string;
 }
 
@@ -237,7 +239,6 @@ export interface CourseAssignedMember {
   groupNames: string[];
   assignedAt: string;
   dueDate: string | null;
-  status: string | null;
   addedBy: string;
   progressPct: number | null;
   assignedDirectly: boolean;
@@ -393,7 +394,7 @@ export interface Group {
   createdAt: string;
 }
 
-export interface GroupsListQuery {
+export interface GroupsListQuery extends PaginationQuery {
   kind?: GroupKind | GroupKind[];
 }
 

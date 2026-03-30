@@ -1,6 +1,8 @@
 import { AxiosInstance } from 'axios';
 import {
+  PagedResult,
   Role,
+  RolesListQuery,
   RolesCreateInput,
   RolesUpdateInput,
   RolesUpdateLevelsInput,
@@ -13,9 +15,14 @@ export class RolesService {
     private readonly assertMutationAllowed: (operation: string) => void
   ) {}
 
-  async list(): Promise<Role[]> {
-    const resp = await this.http.get<{ items: Role[] }>('/roles');
-    return resp.data.items;
+  async list(query: RolesListQuery = {}): Promise<PagedResult<Role>> {
+    const resp = await this.http.get<PagedResult<Role>>('/roles', {
+      params: {
+        limit: query.limit,
+        token: query.token,
+      },
+    });
+    return resp.data;
   }
 
   async get(id: string): Promise<Role | null> {

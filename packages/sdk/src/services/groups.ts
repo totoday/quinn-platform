@@ -9,6 +9,7 @@ import {
   GroupsListQuery,
   GroupsRemoveMemberInput,
   GroupsUpdateNameInput,
+  PagedResult,
 } from '../types';
 
 export class GroupsService {
@@ -17,17 +18,19 @@ export class GroupsService {
     private readonly assertMutationAllowed: (operation: string) => void,
   ) {}
 
-  async list(query: GroupsListQuery = {}): Promise<Group[]> {
+  async list(query: GroupsListQuery = {}): Promise<PagedResult<Group>> {
     const params: Record<string, string | undefined> = {
+      limit: query.limit?.toString(),
+      token: query.token,
       kind: Array.isArray(query.kind)
         ? query.kind.join(',')
         : query.kind,
     };
-    const resp = await this.http.get<{ items: Group[] }>(
+    const resp = await this.http.get<PagedResult<Group>>(
       '/groups',
       { params }
     );
-    return resp.data.items;
+    return resp.data;
   }
 
   async get(id: string): Promise<Group | null> {
