@@ -6,6 +6,7 @@ import {
   GroupsAddMembersInput,
   GroupsCreateInput,
   GroupsCreateResult,
+  GroupsListQuery,
   GroupsRemoveMemberInput,
   GroupsUpdateNameInput,
 } from '../types';
@@ -16,9 +17,15 @@ export class GroupsService {
     private readonly assertMutationAllowed: (operation: string) => void,
   ) {}
 
-  async list(): Promise<Group[]> {
+  async list(query: GroupsListQuery = {}): Promise<Group[]> {
+    const params: Record<string, string | undefined> = {
+      kind: Array.isArray(query.kind)
+        ? query.kind.join(',')
+        : query.kind,
+    };
     const resp = await this.http.get<{ items: Group[] }>(
-      '/groups'
+      '/groups',
+      { params }
     );
     return resp.data.items;
   }

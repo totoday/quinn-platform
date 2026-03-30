@@ -2,11 +2,15 @@ import { AxiosInstance } from 'axios';
 import {
   AssignedUser,
   Course,
+  CourseAssignedGroup,
+  CourseAssignedMember,
   CoursesAssignToGroupsInput,
   CoursesAssignToUsersInput,
+  CoursesListQuery,
   CoursesUnassignFromGroupInput,
   CoursesUnassignFromUserInput,
   PagedResult,
+  Program,
 } from '../types';
 
 export class CoursesService {
@@ -15,7 +19,7 @@ export class CoursesService {
     private readonly assertMutationAllowed: (operation: string) => void
   ) {}
 
-  async list(query: { limit?: number; token?: string } = {}): Promise<PagedResult<Course>> {
+  async list(query: CoursesListQuery = {}): Promise<PagedResult<Course>> {
     const resp = await this.http.get<PagedResult<Course>>(
       '/courses',
       { params: query }
@@ -34,6 +38,27 @@ export class CoursesService {
     const resp = await this.http.post<{ items: Course[] }>(
       '/courses/batch',
       { ids }
+    );
+    return resp.data.items;
+  }
+
+  async listContainingPrograms(courseId: string): Promise<Program[]> {
+    const resp = await this.http.get<{ items: Program[] }>(
+      `/courses/${courseId}/containing-programs`
+    );
+    return resp.data.items;
+  }
+
+  async listAssignedGroups(courseId: string): Promise<CourseAssignedGroup[]> {
+    const resp = await this.http.get<{ items: CourseAssignedGroup[] }>(
+      `/courses/${courseId}/groups`
+    );
+    return resp.data.items;
+  }
+
+  async listAssignedMembers(courseId: string): Promise<CourseAssignedMember[]> {
+    const resp = await this.http.get<{ items: CourseAssignedMember[] }>(
+      `/courses/${courseId}/members`
     );
     return resp.data.items;
   }

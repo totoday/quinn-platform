@@ -1,9 +1,10 @@
 import { AxiosInstance } from 'axios';
 import {
-  MembersBatchDeleteInput,
   Member,
   MembersBatchGetInput,
   MembersCreateInput,
+  MembersUpdateGroupsInput,
+  MembersUpdateLocationInput,
   MembersListQuery,
   MembersUpdateManagerInput,
   MembersUpdateProfileInput,
@@ -24,6 +25,9 @@ export class MembersService {
       token: query.token,
       search: query.search,
       managerUid: query.managerUid,
+      groupId: query.groupId,
+      locationId: query.locationId,
+      roleId: query.roleId,
       privilege: Array.isArray(query.privilege)
         ? query.privilege.join(',')
         : query.privilege,
@@ -65,14 +69,6 @@ export class MembersService {
     await this.http.delete(`/members/${memberId}`);
   }
 
-  async batchDelete(input: string[] | MembersBatchDeleteInput): Promise<void> {
-    this.assertMutationAllowed('members.batchDelete');
-    const body: MembersBatchDeleteInput = Array.isArray(input)
-      ? { uids: input }
-      : input;
-    await this.http.post('/members/batch-delete', body);
-  }
-
   async create(input: MembersCreateInput): Promise<Member | null> {
     this.assertMutationAllowed('members.create');
     const resp = await this.http.post<{ item: Member | null }>(
@@ -105,6 +101,24 @@ export class MembersService {
     const resp = await this.http.put<{ item: Member | null }>(
       `/members/${input.memberId}/manager`,
       { managerUid: input.managerUid }
+    );
+    return resp.data.item;
+  }
+
+  async updateGroups(input: MembersUpdateGroupsInput): Promise<Member | null> {
+    this.assertMutationAllowed('members.updateGroups');
+    const resp = await this.http.put<{ item: Member | null }>(
+      `/members/${input.memberId}/groups`,
+      { groupIds: input.groupIds }
+    );
+    return resp.data.item;
+  }
+
+  async updateLocation(input: MembersUpdateLocationInput): Promise<Member | null> {
+    this.assertMutationAllowed('members.updateLocation');
+    const resp = await this.http.put<{ item: Member | null }>(
+      `/members/${input.memberId}/location`,
+      { locationId: input.locationId }
     );
     return resp.data.item;
   }

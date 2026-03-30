@@ -1,4 +1,4 @@
-export type Privilege = 'owner' | 'admin' | 'member';
+export type Privilege = 'owner' | 'admin' | 'content-creator' | 'member';
 
 export interface PaginationQuery {
   limit?: number;
@@ -38,6 +38,8 @@ export interface Member {
   privilege: Privilege;
   managerUid: string | null;
   roleIds: string[];
+  groupIds: string[];
+  locationId: string | null;
   createdAt: string;
   phoneNumber: string | null;
 }
@@ -46,15 +48,14 @@ export interface MembersListQuery extends PaginationQuery {
   search?: string;
   privilege?: Privilege | Privilege[];
   managerUid?: string;
+  groupId?: string;
+  locationId?: string;
+  roleId?: string;
 }
 
 export interface MembersBatchGetInput {
   ids?: string[];
   emails?: string[];
-}
-
-export interface MembersBatchDeleteInput {
-  uids: string[];
 }
 
 export interface MembersCreateInput {
@@ -79,11 +80,39 @@ export interface MembersUpdateManagerInput {
   managerUid: string;
 }
 
+export interface MembersUpdateGroupsInput {
+  memberId: string;
+  groupIds: string[];
+}
+
+export interface MembersUpdateLocationInput {
+  memberId: string;
+  locationId: string | null;
+}
+
 export interface MembersUpdateProfileInput {
   memberId: string;
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
+}
+
+export interface Location {
+  id: string;
+  orgId: string;
+  label: string;
+  membersCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LocationsCreateInput {
+  label: string;
+}
+
+export interface LocationsUpdateInput {
+  locationId: string;
+  label: string;
 }
 
 export interface Role {
@@ -169,11 +198,50 @@ export interface CompetenciesListQuery extends PaginationQuery {
   search?: string;
 }
 
+export type CourseType = 'training' | 'assessment' | 'sign-off';
+
+export interface MediaRef {
+  id: string;
+  url: string;
+}
+
+export interface CoursesListQuery extends PaginationQuery {
+  search?: string;
+}
+
 export interface Course {
   id: string;
   name: string;
+  courseType: CourseType | null;
   creatorUid: string;
+  learnerCount: number;
+  cover: MediaRef | null;
+  tagNames: string[];
+  containingProgramIds: string[];
+  isDraft: boolean;
   createdAt: string;
+}
+
+export interface CourseAssignedGroup {
+  groupId: string;
+  groupName: string;
+  membersCount: number;
+  assignedBy: string;
+  assignedAt: string;
+}
+
+export interface CourseAssignedMember {
+  userId: string;
+  name: string;
+  email: string;
+  groupNames: string[];
+  assignedAt: string;
+  dueDate: string | null;
+  status: string | null;
+  addedBy: string;
+  progressPct: number | null;
+  assignedDirectly: boolean;
+  assignedViaProgram: boolean;
 }
 
 export type DueDateType = 'fixed' | 'relative';
@@ -211,6 +279,39 @@ export interface CoursesUnassignFromUserInput {
 export interface CoursesUnassignFromGroupInput {
   courseId: string;
   groupId: string;
+}
+
+export type AssignmentStatus = 'not-started' | 'in-progress' | 'completed';
+
+export type AssignmentSourceType = 'individual' | 'group' | 'program';
+
+export interface AssignmentSource {
+  type: AssignmentSourceType;
+  assignedAt: string;
+  dueDate: string | null;
+  assignedByUserId: string | null;
+  assignedByName: string | null;
+  groupId: string | null;
+  groupName: string | null;
+  programId: string | null;
+  programName: string | null;
+}
+
+export interface Assignment {
+  userId: string;
+  courseId: string;
+  assignedAt: string;
+  dueDate: string | null;
+  status: AssignmentStatus;
+  progressPct: number;
+  completedAt: string | null;
+  assessmentScore: number | null;
+  sources: AssignmentSource[];
+}
+
+export interface AssignmentsBatchGetInputItem {
+  userId: string;
+  courseId: string;
 }
 
 export interface KnowledgeSearchInput {
@@ -272,11 +373,28 @@ export interface KnowledgeFoldersListQuery {
   parentId?: string;
 }
 
+export type GroupKind = 'user-managed' | 'auto-mapped';
+
+export type GroupAutoMapType = 'role' | 'location' | 'manager';
+
+export interface GroupAutoMap {
+  type: GroupAutoMapType;
+  sourceId: string;
+}
+
 export interface Group {
   id: string;
   name: string;
   creatorUid: string;
+  kind: GroupKind;
+  autoMap: GroupAutoMap | null;
+  membersCount: number;
+  coursesCount: number;
   createdAt: string;
+}
+
+export interface GroupsListQuery {
+  kind?: GroupKind | GroupKind[];
 }
 
 export interface GroupMember {
@@ -311,38 +429,23 @@ export interface GroupsRemoveMemberInput {
   userId: string;
 }
 
+export interface ProgramsListQuery extends PaginationQuery {
+  search?: string;
+}
+
 export interface Program {
   id: string;
   name: string;
   description: string;
   creatorUid: string;
+  courseCount: number;
+  learnerCount: number;
   createdAt: string;
 }
 
-export interface Progress {
-  id: string;
-  userId: string;
-  courseId: string;
-  progressPct: number;
-  completedAt: string | null;
-  score: number | null;
-}
-
-export interface ProgressSummary {
-  total: number;
-  numCompleted: number;
-  numInProgress: number;
-  numNotStarted: number;
-}
-
-export interface ProgressesListInput {
-  userIds?: string[];
+export interface ProgramsCreateInput {
+  name: string;
   courseIds?: string[];
-}
-
-export interface ProgressesBatchQueryInputItem {
-  userId: string;
-  courseId: string;
 }
 
 export interface Endorsement {

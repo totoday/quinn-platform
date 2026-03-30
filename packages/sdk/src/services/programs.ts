@@ -1,12 +1,19 @@
 import { AxiosInstance } from 'axios';
-import { Course, PagedResult, Program } from '../types';
+import {
+  Course,
+  PagedResult,
+  Program,
+  ProgramsCreateInput,
+  ProgramsListQuery,
+} from '../types';
 
 export class ProgramsService {
   constructor(
-    private readonly http: AxiosInstance
+    private readonly http: AxiosInstance,
+    private readonly assertMutationAllowed: (operation: string) => void
   ) {}
 
-  async list(query: { limit?: number; token?: string } = {}): Promise<PagedResult<Program>> {
+  async list(query: ProgramsListQuery = {}): Promise<PagedResult<Program>> {
     const resp = await this.http.get<PagedResult<Program>>(
       '/programs',
       { params: query }
@@ -27,6 +34,20 @@ export class ProgramsService {
       { ids }
     );
     return resp.data.items;
+  }
+
+  async create(input: ProgramsCreateInput): Promise<Program | null> {
+    this.assertMutationAllowed('programs.create');
+    const resp = await this.http.post<{ item: Program | null }>(
+      '/programs',
+      input
+    );
+    return resp.data.item;
+  }
+
+  async delete(programId: string): Promise<void> {
+    this.assertMutationAllowed('programs.delete');
+    await this.http.delete(`/programs/${programId}`);
   }
 
   async listCourses(id: string): Promise<Course[]> {
