@@ -1,5 +1,5 @@
 ---
-"@totoday/quinn-sdk": major
+"@totoday/quinn-sdk": minor
 ---
 
 Align `@totoday/quinn-sdk` with the latest Quinn platform domains.
